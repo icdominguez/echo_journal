@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">EchoJournal</string>
+    <string name="your_echo_journal_top_bar_title">Your EchoJournal</string>
+    <string name="create_record_top_bar_title">New Item</string>
+</resources>
