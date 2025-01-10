@@ -25,14 +25,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.icdominguez.echo_journal.R
+import com.icdominguez.echo_journal.common.toHoursAndMinutes
 import com.icdominguez.echo_journal.data.model.EntryEntity
 import com.icdominguez.echo_journal.presentation.designsystem.composables.AudioPlayerComponent
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
 import com.icdominguez.echo_journal.presentation.screens.FakeData
-import com.icdominguez.echo_journal.presentation.toHoursAndMinutes
 
 @Composable
 fun EntryTimeLineItem(
@@ -43,11 +44,11 @@ fun EntryTimeLineItem(
     onAudioPlayerPause: () -> Unit = {},
 ) {
     val moodIcon: Int = when(entry.mood) {
-        "SAD" -> R.drawable.sad_mood_on
-        "STRESSED" -> R.drawable.stressed_mood_on
-        "NEUTRAL" -> R.drawable.neutral_mood_on
-        "PEACEFUL" -> R.drawable.neutral_mood_on
-        "EXCITED" -> R.drawable.excited_mood_on
+        "Sad" -> R.drawable.sad_mood_on
+        "Stressed" -> R.drawable.stressed_mood_on
+        "Neutral" -> R.drawable.neutral_mood_on
+        "Peaceful" -> R.drawable.peaceful_mood_on
+        "Excited" -> R.drawable.excited_mood_on
         else -> R.drawable.neutral_mood_on
     }
 
@@ -104,10 +105,15 @@ fun EntryTimeLineItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
+                        modifier = Modifier
+                            .weight(weight = 1f),
                         text = entry.title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         style = LocalEchoJournalTypography.current.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
                         )
@@ -126,8 +132,8 @@ fun EntryTimeLineItem(
                 DescriptionText(
                     text = entry.description
                 )
-            }
 
+            }
         }
     }
 }

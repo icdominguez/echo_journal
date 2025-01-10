@@ -25,6 +25,7 @@ sealed class EchoJournalTypography(
     val bodyMedium: TextStyle,
     val bodySmall: TextStyle,
     val labelMedium: TextStyle,
+    val labelLarge: TextStyle,
     val headlineLarge: TextStyle,
     val headlineMedium: TextStyle,
     val headlineSmall: TextStyle,
@@ -44,6 +45,10 @@ internal data object MainTypography : EchoJournalTypography(
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 0.sp,
+    ),
+    labelLarge = DefaultCustomStyle.copy(
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
     ),
     headlineLarge = DefaultCustomStyle.copy(
         fontWeight = FontWeight.Medium,
