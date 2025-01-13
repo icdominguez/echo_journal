@@ -1,20 +1,24 @@
 package com.icdominguez.echo_journal.presentation.screens.yourechojournal
 
-import com.icdominguez.echo_journal.data.audio.AndroidAudioRecorder
-import com.icdominguez.echo_journal.domain.repository.FileManagerRepository
+import com.icdominguez.echo_journal.domain.audio.AudioPlayer
+import com.icdominguez.echo_journal.domain.audio.AudioRecorder
+import com.icdominguez.echo_journal.domain.usecase.CreateFileUseCase
+import com.icdominguez.echo_journal.domain.usecase.DeleteFileUseCase
 import com.icdominguez.echo_journal.presentation.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class YourEchoJournalScreenViewModel @Inject constructor(
-    private val androidAudioRecorder: AndroidAudioRecorder,
-    private val fileManagerRepository: FileManagerRepository,
+    private val audioRecorder: AudioRecorder,
+    private val createFileUseCase: CreateFileUseCase,
+    private val deleteFileUseCase: DeleteFileUseCase,
 ): MviViewModel<YourEchoJournalScreenViewModel.State, YourEchoJournalScreenViewModel.Event>() {
 
     data class State(
         val showRecordModalBottomSheet: Boolean = false,
         val visiblePermissionDialogQueue: List<String> = emptyList(),
+        val filePath: String = "",
     )
 
     override var currentState: State = State()
@@ -30,7 +34,6 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         // region: others
         data object OnCreateEntryFloatingActionButtonClicked: Event()
         data object OnRecordAudioModalSheetDismissed: Event()
-
     }
 
     override fun uiEvent(event: Event) {
@@ -70,24 +73,26 @@ class YourEchoJournalScreenViewModel @Inject constructor(
     }
 
     private fun onRecordAudioPaused() =
-        androidAudioRecorder.resume()
+        audioRecorder.resume()
 
     private fun onRecordAudioResumed() =
-        androidAudioRecorder.pause()
+        audioRecorder.pause()
 
     private fun onRecordAudioConfirmed() {
         updateState { copy(showRecordModalBottomSheet = false) }
-        androidAudioRecorder.stop()
+        audioRecorder.stop()
     }
 
     private fun onCreateEntryFloatingActionButtonClicked() {
-        updateState { copy(showRecordModalBottomSheet = true) }
-        val filePath = fileManagerRepository.createFile()
-        androidAudioRecorder.start(filePath)
+        val filePath = createFileUseCase()
+        updateState { copy(showRecordModalBottomSheet = true, filePath = filePath) }
+        audioRecorder.init(filePath)
+        audioRecorder.start()
     }
 
     private fun onRecordAudioModalSheetDismissed() {
         updateState { copy(showRecordModalBottomSheet = false) }
-        androidAudioRecorder.stop()
+        audioRecorder.stop()
+        deleteFileUseCase(currentState.filePath)
     }
 }

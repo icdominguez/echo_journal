@@ -1,11 +1,9 @@
 package com.icdominguez.echo_journal.domain.audio
 
-import java.io.File
-
 interface AudioPlayer {
-    fun init(file: File): Int
+    fun init(audioName: String): Int
     fun play()
-    fun playFrom(millis: Long)
+    fun playFrom(millis: Int)
     fun pause()
-    fun stop()
+    fun reset()
 }

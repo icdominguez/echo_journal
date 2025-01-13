@@ -63,7 +63,9 @@ fun DescriptionText(
         }
     }
 
-    Box(modifier = Modifier.fillMaxWidth().background(color = Color.White)) {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+    ) {
         Text(
             text = cutText ?: text,
             style = LocalEchoJournalTypography.current.bodyMedium,

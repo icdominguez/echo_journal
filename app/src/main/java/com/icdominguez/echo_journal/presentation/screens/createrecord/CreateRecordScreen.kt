@@ -1,15 +1,18 @@
 package com.icdominguez.echo_journal.presentation.screens.createrecord
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -20,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.icdominguez.echo_journal.R
+import com.icdominguez.echo_journal.presentation.designsystem.composables.AudioPlayerComponent
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.CreateRecordScreenTopBar
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.EntryTextField
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.moodselector.MoodSelectorModalBottomSheet
@@ -35,7 +39,10 @@ fun CreateRecordScreen(
             .fillMaxSize(),
         topBar = {
             CreateRecordScreenTopBar(
-                onNavigationIconClicked = { navigateBack() }
+                onNavigationIconClicked = {
+                    uiEvent(CreateRecordScreenViewModel.Event.OnBackClicked)
+                    navigateBack()
+                }
             )
         }
     ) { innerPadding ->
@@ -72,6 +79,17 @@ fun CreateRecordScreen(
                         onEntryTextChange = { uiEvent(CreateRecordScreenViewModel.Event.OnEntryTextChanged(it)) },
                     )
                 }
+
+                Spacer(modifier = Modifier
+                    .padding(top = 16.dp))
+
+                AudioPlayerComponent(
+                    audioDuration = state.audioRecordedDuration,
+                    color = state.selectedMood?.color ?: MaterialTheme.colorScheme.primary,
+                    onPlayClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnPlayClicked) },
+                    onPauseClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnPauseClicked) },
+                    onSliderValueChanged = { uiEvent(CreateRecordScreenViewModel.Event.OnSliderValueChanged(it)) }
+                )
             }
 
             if(state.showMoodSelectorModalBottomSheet) {
@@ -83,6 +101,11 @@ fun CreateRecordScreen(
                     onConfirm = { uiEvent(CreateRecordScreenViewModel.Event.OnMoodSelectorModalBottomSheetConfirmed) }
                 )
             }
+        }
+
+        BackHandler {
+            uiEvent(CreateRecordScreenViewModel.Event.OnBackClicked)
+            navigateBack()
         }
     }
 }

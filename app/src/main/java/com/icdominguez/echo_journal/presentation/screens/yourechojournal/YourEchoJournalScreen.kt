@@ -1,12 +1,13 @@
 package com.icdominguez.echo_journal.presentation.screens.yourechojournal
 
-import androidx.compose.foundation.layout.Arrangement
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,23 +17,25 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.icdominguez.echo_journal.presentation.screens.FakeData
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import com.icdominguez.echo_journal.presentation.designsystem.composables.PermissionDialog
+import com.icdominguez.echo_journal.presentation.screens.FakeData
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.CreateEntryFloatingActionButton
-import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.entrytimeline.EntryTimeLineItem
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.RecordAudioModalBottomSheet
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.RecordAudioTextProvider
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.YourEchoJournalTopBar
+import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.entrytimeline.EntryTimeLineItem
 
 @Composable
 fun YourEchoJournalScreen(
     state: YourEchoJournalScreenViewModel.State = YourEchoJournalScreenViewModel.State(),
     uiEvent: (YourEchoJournalScreenViewModel.Event) -> Unit = {},
-    navigateToCreateRecordScreen: () -> Unit = {},
+    navigateToCreateRecordScreen: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -48,16 +51,29 @@ fun YourEchoJournalScreen(
     )
 
      Scaffold(
-         topBar = { YourEchoJournalTopBar() }
+         modifier = Modifier,
+         topBar = {
+             YourEchoJournalTopBar(modifier = Modifier.background(Color.Transparent))
+         }
      ) { innerPadding ->
          Box(
              modifier = Modifier
                  .fillMaxSize()
+                 .background(
+                     brush = Brush
+                         .linearGradient(
+                             colors = listOf(
+                                 Color(android.graphics.Color.parseColor("#D9E2FF")).copy(alpha = 0.4f),
+                                 Color(android.graphics.Color.parseColor("#EEF0FF")).copy(alpha = 0.4f)
+                             ),
+                     )
+                 )
                  .padding(innerPadding),
          ) {
 
              LazyColumn(
-                 verticalArrangement = Arrangement.spacedBy(0.dp)
+                 modifier = Modifier
+                     .padding(horizontal = 16.dp),
              ) {
                  itemsIndexed(FakeData.timelineEntries) { index, entry ->
                      EntryTimeLineItem(
@@ -80,7 +96,7 @@ fun YourEchoJournalScreen(
              RecordAudioModalBottomSheet(
                  onDismissRequest = { uiEvent(YourEchoJournalScreenViewModel.Event.OnRecordAudioModalSheetDismissed) },
                  navigateToNewEntry = {
-                     navigateToCreateRecordScreen()
+                     navigateToCreateRecordScreen(state.filePath)
                      uiEvent(YourEchoJournalScreenViewModel.Event.OnRecordAudioConfirmed)
                  },
                  onRecordAudioPaused = { uiEvent(YourEchoJournalScreenViewModel.Event.OnRecordAudioPaused) },

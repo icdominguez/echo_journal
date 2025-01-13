@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -28,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.icdominguez.echo_journal.R
 import com.icdominguez.echo_journal.data.model.EntryEntity
+import com.icdominguez.echo_journal.presentation.designsystem.composables.AudioPlayerComponent
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
 import com.icdominguez.echo_journal.presentation.screens.FakeData
 import com.icdominguez.echo_journal.presentation.toHoursAndMinutes
@@ -36,7 +38,9 @@ import com.icdominguez.echo_journal.presentation.toHoursAndMinutes
 fun EntryTimeLineItem(
     entry: EntryEntity,
     index: Int,
-    lastIndex: Int
+    lastIndex: Int,
+    onAudioPlayerStart: () -> Unit = {},
+    onAudioPlayerPause: () -> Unit = {},
 ) {
     val moodIcon: Int = when(entry.mood) {
         "SAD" -> R.drawable.sad_mood_on
@@ -55,7 +59,8 @@ fun EntryTimeLineItem(
         horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
         Column(
-            modifier = Modifier.padding(start = 16.dp).padding(top = if (index == 0) 8.dp else 0.dp),
+            modifier = Modifier
+                .padding(top = if (index == 0) 8.dp else 0.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if(index != 0) {
@@ -82,8 +87,12 @@ fun EntryTimeLineItem(
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .padding(bottom = 16.dp)
-                .clip(shape = RoundedCornerShape(6.dp))
-                .background(color = Color.White)
+                .shadow(
+                    elevation = 4.dp,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .clip(shape = RoundedCornerShape(10.dp))
+                .background(Color.White)
         ) {
             Column(
                 modifier = Modifier
@@ -100,13 +109,18 @@ fun EntryTimeLineItem(
                     Text(
                         text = entry.title,
                         style = LocalEchoJournalTypography.current.headlineSmall.copy(
-                            fontWeight = FontWeight(weight = 500)
+                            fontWeight = FontWeight.Bold,
                         )
                     )
-                    Text(entry.date.toHoursAndMinutes())
+                    Text(
+                        text = entry.date.toHoursAndMinutes(),
+                        style = LocalEchoJournalTypography.current.bodySmall,
+                    )
                 }
-
                 //Audio seekbar
+                AudioPlayerComponent(
+                    onPlayClicked = { onAudioPlayerStart() }
+                )
 
                 //Description
                 DescriptionText(

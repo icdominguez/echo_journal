@@ -10,7 +10,7 @@ class FakeData {
                 mood = "SAD",
                 title = "Hoy estoy triste",
                 description = "Ha acabado el año y me eencuentro un poco mal, porque tengo miedo de que empiece algo nuevo y no sea capaz de mejorar y siga estancado. Este 2024 me ha enseñado muchas cosas y no me voy a rendir. Todo se puede conseguir con esfuerzo y disciplina",
-                filePath = ""
+                filePath = "",
             ),
             EntryEntity(
                 entryId = 0,

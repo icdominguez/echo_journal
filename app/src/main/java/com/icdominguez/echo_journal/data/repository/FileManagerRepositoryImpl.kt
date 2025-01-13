@@ -17,13 +17,20 @@ class FileManagerRepositoryImpl @Inject constructor(
         private const val AUDIO_EXTENSION = ".mp3"
     }
 
-    override fun createFile(): String {
-        val folder = File(context.filesDir, AUDIOS_FOLDER)
+    override fun createFile(inCache: Boolean): String {
+        val folder = File(if(inCache) context.cacheDir else context.filesDir, AUDIOS_FOLDER)
 
         if(!folder.exists()) {
             folder.mkdirs()
         }
 
         return File(folder, "${LocalDateTime.now().toDateFormatted()}$AUDIO_EXTENSION").path
+    }
+
+    override fun deleteFile(path: String) {
+        val file = File(path)
+        if(File(path).exists() && file.isFile) {
+            file.delete()
+        }
     }
 }
