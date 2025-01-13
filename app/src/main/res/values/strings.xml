@@ -9,4 +9,8 @@
     <string name="audio_record_permission_permanent_declined">It seems you permanently declined microphone permission. You can go to the app setting to grant it</string>
     <string name="audio_record_permission_not_declined">"This app needs access to your microphone so that you can hear your voice in the journal"</string>
     <string name="show_more">Show more</string>
+    <string name="how_are_you_doing">How are you doing?</string>
+    <string name="add_title">Add Title…</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
 </resources>
