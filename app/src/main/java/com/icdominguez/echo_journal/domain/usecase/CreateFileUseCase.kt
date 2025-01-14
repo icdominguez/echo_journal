@@ -1,4 +1,4 @@
-package com.icdominguez.echo_journal.domain
+package com.icdominguez.echo_journal.domain.usecase
 
 import com.icdominguez.echo_journal.domain.repository.FileManagerRepository
 import javax.inject.Inject

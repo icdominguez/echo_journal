@@ -17,7 +17,7 @@ fun Navigation() {
 
     NavHost(
         navController = navController,
-        startDestination = NavItem.YourEchoJournal.baseRoute
+        startDestination = NavItem.YourEchoJournal.route
     ) {
         composable(route = NavItem.YourEchoJournal.baseRoute) {
             val viewModel = hiltViewModel<YourEchoJournalScreenViewModel>()
@@ -25,17 +25,23 @@ fun Navigation() {
             YourEchoJournalScreen(
                 state = viewModel.state.collectAsStateWithLifecycle().value,
                 uiEvent = viewModel::uiEvent,
-                navigateToCreateRecordScreen = { navController.navigate(NavItem.CreateRecord.baseRoute) }
+                navigateToCreateRecordScreen = { fileRecordedPath ->
+                    navController.navigate(NavItem.CreateRecord.createNavRoute(fileRecordedPath))
+                }
             )
         }
 
-        composable(route = NavItem.CreateRecord.baseRoute) {
+        composable(
+            route = NavItem.CreateRecord.route,
+            arguments = NavItem.CreateRecord.args,
+        ) { backStackEntry ->
+            val fileRecordedPath = backStackEntry.arguments?.getString(NavArg.FileRecordedPath.key)
+            requireNotNull(fileRecordedPath) { "Can't be null, create record required a file path" }
             val viewModel = hiltViewModel<CreateRecordScreenViewModel>()
-
             CreateRecordScreen(
                 state = viewModel.state.collectAsStateWithLifecycle().value,
                 uiEvent = viewModel::uiEvent,
-                navigateBack = { navController.popBackStack() }
+                navigateBack = { navController.popBackStack() },
             )
         }
     }

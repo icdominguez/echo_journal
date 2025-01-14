@@ -21,14 +21,12 @@ class AndroidAudioRecorder @Inject constructor(
     private var recorder: MediaRecorder? = null
     var isPaused: Boolean = false
 
-    private fun createRecorder(): MediaRecorder {
-        return if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    override fun init(path: String) {
+        val newRecorder = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             MediaRecorder(context)
         } else MediaRecorder()
-    }
 
-    override fun start(path: String) {
-        createRecorder().apply {
+        newRecorder.apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
@@ -37,10 +35,12 @@ class AndroidAudioRecorder @Inject constructor(
             setAudioEncodingBitRate(BIT_RATE)
 
             prepare()
-            start()
-
             recorder = this
         }
+    }
+
+    override fun start() {
+        recorder?.start()
     }
 
     override fun pause() {

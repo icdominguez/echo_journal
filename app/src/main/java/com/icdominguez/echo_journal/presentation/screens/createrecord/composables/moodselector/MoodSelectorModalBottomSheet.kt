@@ -31,6 +31,7 @@ fun MoodSelectorModalBottomSheet(
     moodList: List<Mood> = emptyList(),
     selectedMood: Mood? = null,
     onMoodClicked: (Mood) -> Unit = {},
+    onCancel: () -> Unit = {},
     onConfirm: () -> Unit = {},
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
