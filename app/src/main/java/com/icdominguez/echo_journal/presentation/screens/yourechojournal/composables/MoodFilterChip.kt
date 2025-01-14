@@ -16,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
@@ -33,7 +32,6 @@ import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Mood
 
 @Composable
 fun MoodFilterChip(
-    columnSize: Size = Size.Zero,
     selectedMoodList: List<Mood> = listOf(),
     onCloseButtonClicked: () -> Unit = {},
     onMoodItemClicked: (mood: Mood) -> Unit = {}
@@ -42,8 +40,7 @@ fun MoodFilterChip(
     val maxSize = 2
 
     CustomFilterChip(
-        columnSize = columnSize,
-        selectedMoodList = selectedMoodList,
+        selectedList = selectedMoodList,
         filterChipLabel = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),

@@ -1,6 +1,5 @@
 package com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.entrytimeline
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
@@ -39,7 +38,8 @@ fun DescriptionText(
 ) {
     var cutText by remember(text) { mutableStateOf<String?>(null)  }
     var expanded by remember { mutableStateOf(false) }
-    var textLayoutResult by remember  { mutableStateOf<TextLayoutResult?>(null) }
+    var textLines by remember { mutableIntStateOf(0) }
+    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
     var seeMoreSize by remember { mutableStateOf(IntSize.Zero) }
     var seeMoreOffset by remember { mutableStateOf(Offset.Zero) }
 
@@ -71,10 +71,13 @@ fun DescriptionText(
             style = LocalEchoJournalTypography.current.bodyMedium,
             overflow = TextOverflow.Ellipsis,
             maxLines = if (expanded) Int.MAX_VALUE else minimizedMaxLines,
-            onTextLayout = { textLayoutResult = it }
+            onTextLayout = {
+                textLines = it.lineCount
+                textLayoutResult = it
+            }
         )
 
-        if (!expanded) {
+        if (!expanded && textLines >= minimizedMaxLines) {
             val showMoreText = buildAnnotatedString {
                 append(text = "... ")
                 withStyle(
@@ -109,8 +112,7 @@ fun DescriptionText(
 @Composable
 fun DescriptionTextComponent() {
     DescriptionText(
-        text = FakeData.timelineEntries[0].description,
-        minimizedMaxLines = 3
+        text = FakeData.timelineEntries[0].description
     )
 }
 

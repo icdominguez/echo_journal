@@ -14,35 +14,29 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import com.icdominguez.echo_journal.R
 import com.icdominguez.echo_journal.presentation.designsystem.composables.PermissionDialog
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.CreateEntryFloatingActionButton
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.MoodFilterChip
-import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.NoEntriesComponent
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.RecordAudioModalBottomSheet
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.RecordAudioTextProvider
+import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.TopicFilterChip
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.YourEchoJournalTopBar
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.entrytimeline.EntryTimeLineItem
 
@@ -65,8 +59,6 @@ fun YourEchoJournalScreen(
         }
     )
 
-    var columnSize by remember { mutableStateOf(Size.Zero) }
-
     Scaffold(
         topBar = {
             YourEchoJournalTopBar(modifier = Modifier.background(Color.Transparent))
@@ -88,28 +80,39 @@ fun YourEchoJournalScreen(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .onGloballyPositioned { layoutCoordinates ->
-                        columnSize = layoutCoordinates.size.toSize()
-                    },
+                    .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                MoodFilterChip(
-                    columnSize = columnSize,
-                    selectedMoodList = state.selectedMoodList,
-                    onCloseButtonClicked = { uiEvent(YourEchoJournalScreenViewModel.Event.OnMoodsChipCloseButtonClicked) },
-                    onMoodItemClicked = { mood -> uiEvent(YourEchoJournalScreenViewModel.Event.OnMoodItemClicked(mood = mood)) }
-                )
+                LazyRow (
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    item {
+                        MoodFilterChip(
+                            selectedMoodList = state.selectedMoodList,
+                            onCloseButtonClicked = { uiEvent(YourEchoJournalScreenViewModel.Event.OnMoodsChipCloseButtonClicked) },
+                            onMoodItemClicked = { mood -> uiEvent(YourEchoJournalScreenViewModel.Event.OnMoodItemClicked(mood = mood)) }
+                        )
+                    }
 
-                if (state.filteredTimelineEntriesList.isNotEmpty()) {
+                    item {
+                        TopicFilterChip(
+                            selectedTopicsList = state.selectedTopicList,
+                            onCloseButtonClicked = { uiEvent(YourEchoJournalScreenViewModel.Event.OnTopicsChipCloseButtonClicked) },
+                            onTopicItemClicked = { topic -> uiEvent(YourEchoJournalScreenViewModel.Event.OnTopicItemClicked(topic = topic)) }
+                        )
+                    }
+                }
+
+
+                if (state.filteredEntryList.isNotEmpty()) {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(0.dp)
                     ) {
-                        itemsIndexed(state.filteredTimelineEntriesList) { index, entry ->
+                        itemsIndexed(state.filteredEntryList) { index, entry ->
                             EntryTimeLineItem(
                                 entry = entry,
                                 index = index,
-                                lastIndex = state.filteredTimelineEntriesList.lastIndex
+                                lastIndex = state.filteredEntryList.lastIndex
                             )
                         }
                     }
