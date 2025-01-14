@@ -1,10 +1,12 @@
 package com.icdominguez.echo_journal.presentation.screens.yourechojournal
 
-import com.icdominguez.echo_journal.domain.audio.AudioPlayer
+import com.icdominguez.echo_journal.data.model.EntryEntity
 import com.icdominguez.echo_journal.domain.audio.AudioRecorder
 import com.icdominguez.echo_journal.domain.usecase.CreateFileUseCase
 import com.icdominguez.echo_journal.domain.usecase.DeleteFileUseCase
 import com.icdominguez.echo_journal.presentation.MviViewModel
+import com.icdominguez.echo_journal.presentation.screens.FakeData
+import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Mood
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -18,6 +20,9 @@ class YourEchoJournalScreenViewModel @Inject constructor(
     data class State(
         val showRecordModalBottomSheet: Boolean = false,
         val visiblePermissionDialogQueue: List<String> = emptyList(),
+        val timelineEntriesList: List<EntryEntity> = FakeData.timelineEntries,
+        val filteredTimelineEntriesList: List<EntryEntity> = FakeData.timelineEntries,
+        val selectedMoodList: List<Mood> = listOf(),
         val filePath: String = "",
     )
 
@@ -34,6 +39,9 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         // region: others
         data object OnCreateEntryFloatingActionButtonClicked: Event()
         data object OnRecordAudioModalSheetDismissed: Event()
+        //region: moods filter
+        data object OnMoodsChipCloseButtonClicked: Event()
+        data class OnMoodItemClicked(val mood: Mood): Event()
     }
 
     override fun uiEvent(event: Event) {
@@ -45,6 +53,8 @@ class YourEchoJournalScreenViewModel @Inject constructor(
             is Event.OnRecordAudioConfirmed -> onRecordAudioConfirmed()
             is Event.OnCreateEntryFloatingActionButtonClicked -> onCreateEntryFloatingActionButtonClicked()
             is Event.OnRecordAudioModalSheetDismissed -> onRecordAudioModalSheetDismissed()
+            is Event.OnMoodsChipCloseButtonClicked -> onMoodsChipResetButtonClicked()
+            is Event.OnMoodItemClicked -> onMoodItemClicked(mood = event.mood)
         }
     }
 
@@ -95,4 +105,35 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         audioRecorder.stop()
         deleteFileUseCase(currentState.filePath)
     }
+
+    private fun onMoodsChipResetButtonClicked() {
+        updateState {
+            copy(
+                selectedMoodList = listOf(),
+                filteredTimelineEntriesList = timelineEntriesList
+            )
+        }
+    }
+
+    private fun onMoodItemClicked(mood: Mood) {
+        val newSelectedMoodList: List<Mood> = if (state.value.selectedMoodList.contains(mood)) {
+            state.value.selectedMoodList - mood
+        } else {
+            state.value.selectedMoodList + mood
+        }
+
+        updateState {
+            copy(
+                selectedMoodList =  newSelectedMoodList,
+                filteredTimelineEntriesList = if (newSelectedMoodList.isNotEmpty()) {
+                    timelineEntriesList.filter {
+                        it.mood in newSelectedMoodList.map { mood -> mood.name }
+                    }
+                } else {
+                    timelineEntriesList
+                }
+            )
+        }
+    }
+
 }

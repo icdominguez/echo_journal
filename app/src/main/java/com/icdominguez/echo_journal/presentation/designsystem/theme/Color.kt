@@ -19,6 +19,7 @@ val NeutralVariant99 = Color(0xFFFCFDFE)
 val Error20 = Color(0xFF680014)
 val Error95 = Color(0xFFFFEDEC)
 val Error100 = Color(0xFFFFEDEC)
+val SecondaryContainer = Color(0XFF6B7796)
 
 /* Mood Colors */
 val StressedMood = Color(0xFFDE3A3A)
@@ -26,3 +27,5 @@ val SadMood = Color(0xFF3A8EDE)
 val NeutralMood = Color(0xFF41B278)
 val PeacefulMood = Color(0xFFBE3294)
 val ExcitedMood = Color(0xFFDB6C0B)
+
+val BackgroundMoodItemSelected = Color(0xFF475D92)

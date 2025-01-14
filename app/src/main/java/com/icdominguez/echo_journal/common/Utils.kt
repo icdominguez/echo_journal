@@ -39,3 +39,8 @@ fun Long.millisToMinutesSecondsFormat(): String {
 
     return localDateTime.format(formatter)
 }
+
+fun LocalDateTime.toHoursAndMinutes(): String {
+    val formatter = DateTimeFormatter.ofPattern("HH:mm")
+    return this.format(formatter)
+}
