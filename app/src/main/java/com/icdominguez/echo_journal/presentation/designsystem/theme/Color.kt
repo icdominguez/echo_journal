@@ -29,3 +29,4 @@ val PeacefulMood = Color(0xFFBE3294)
 val ExcitedMood = Color(0xFFDB6C0B)
 
 val BackgroundMoodItemSelected = Color(0xFF475D92)
+val TopicBackground = Color(0XFFF2F2F7)

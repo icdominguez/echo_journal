@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,7 +15,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Tag
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -30,14 +35,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.icdominguez.echo_journal.R
 import com.icdominguez.echo_journal.common.toHoursAndMinutes
-import com.icdominguez.echo_journal.data.model.EntryEntity
 import com.icdominguez.echo_journal.presentation.designsystem.composables.AudioPlayerComponent
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
+import com.icdominguez.echo_journal.presentation.designsystem.theme.TopicBackground
+import com.icdominguez.echo_journal.presentation.model.Entry
 import com.icdominguez.echo_journal.presentation.screens.FakeData
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EntryTimeLineItem(
-    entry: EntryEntity,
+    entry: Entry,
     index: Int,
     lastIndex: Int,
     onAudioPlayerStart: () -> Unit = {},
@@ -123,15 +130,53 @@ fun EntryTimeLineItem(
                         style = LocalEchoJournalTypography.current.bodySmall,
                     )
                 }
+
                 //Audio seekbar
                 AudioPlayerComponent(
                     onPlayClicked = { onAudioPlayerStart() }
                 )
 
                 //Description
-                DescriptionText(
-                    text = entry.description
-                )
+                if (entry.description.isNotEmpty()) {
+                    DescriptionText(
+                        text = entry.description
+                    )
+                }
+
+                if (entry.topics.isNotEmpty()) {
+                    FlowRow (
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val topics: List<String> = entry.topics
+                        topics.forEach { name ->
+                            Row(
+                                modifier = Modifier
+                                    .background(
+                                        color = TopicBackground,
+                                        shape = CircleShape
+                                    )
+                                    .padding(vertical = 2.dp, horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Image(
+                                    modifier = Modifier.size(14.dp),
+                                    imageVector = Icons.Outlined.Tag,
+                                    contentDescription = null
+                                )
+
+                                Text(
+                                    text = name,
+                                    style = LocalEchoJournalTypography.current.headlineXSmall,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        }
+
+
+                    }
+                }
 
             }
         }

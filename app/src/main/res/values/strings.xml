@@ -16,4 +16,5 @@
     <string name="all_moods">All Moods</string>
     <string name="no_entries">No Entries</string>
     <string name="start_recording">Start recording your first Echo</string>
+    <string name="all_topics">All Topics</string>
 </resources>
