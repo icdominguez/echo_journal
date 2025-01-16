@@ -50,15 +50,6 @@ fun EntryTimeLineItem(
     onAudioPlayerStart: () -> Unit = {},
     onAudioPlayerPause: () -> Unit = {},
 ) {
-    val moodIcon: Int = when(entry.mood) {
-        "Sad" -> R.drawable.sad_mood_on
-        "Stressed" -> R.drawable.stressed_mood_on
-        "Neutral" -> R.drawable.neutral_mood_on
-        "Peaceful" -> R.drawable.peaceful_mood_on
-        "Excited" -> R.drawable.excited_mood_on
-        else -> R.drawable.neutral_mood_on
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -76,7 +67,7 @@ fun EntryTimeLineItem(
             }
 
             Image(
-                painter = painterResource(id = moodIcon),
+                painter = painterResource(id = entry.mood.selectedDrawable),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -133,7 +124,8 @@ fun EntryTimeLineItem(
 
                 //Audio seekbar
                 AudioPlayerComponent(
-                    onPlayClicked = { onAudioPlayerStart() }
+                    onPlayClicked = { onAudioPlayerStart() },
+                    color = entry.mood.color,
                 )
 
                 //Description
