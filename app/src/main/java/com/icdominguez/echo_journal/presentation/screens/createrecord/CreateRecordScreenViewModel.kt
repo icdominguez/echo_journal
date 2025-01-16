@@ -1,13 +1,18 @@
 package com.icdominguez.echo_journal.presentation.screens.createrecord
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
 import com.icdominguez.echo_journal.data.audio.AndroidAudioPlayer
+import com.icdominguez.echo_journal.domain.usecase.CreateTopicUseCase
 import com.icdominguez.echo_journal.domain.usecase.DeleteFileUseCase
+import com.icdominguez.echo_journal.domain.usecase.GetAllTopicsUseCase
 import com.icdominguez.echo_journal.presentation.MviViewModel
+import com.icdominguez.echo_journal.presentation.model.Topic
 import com.icdominguez.echo_journal.presentation.navigation.NavArg
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Mood
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Moods
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -15,17 +20,23 @@ class CreateRecordScreenViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val audioPlayer: AndroidAudioPlayer,
     private val deleteFileUseCase: DeleteFileUseCase,
+    private val getAllTopicsUseCase: GetAllTopicsUseCase,
+    private val createTopicUseCase: CreateTopicUseCase,
 ): MviViewModel<CreateRecordScreenViewModel.State, CreateRecordScreenViewModel.Event>() {
 
     private var fileRecordedPath: String? = null
 
     data class State(
         val entryText: String = "",
+        val topicText: String = "",
         val moodList: List<Mood> = Moods.allMods,
         val selectedMood: Mood? = null,
         val moodSelectorModalBottomSheetSelected: Mood? = null,
         val showMoodSelectorModalBottomSheet: Boolean = false,
         val audioRecordedDuration: Int = 0,
+        val topicList: List<Topic> = emptyList(),
+        val filteredTopicList: List<Topic> = emptyList(),
+        val selectedTopics: List<String> = emptyList(),
     )
 
     override var currentState: State = State()
@@ -40,6 +51,10 @@ class CreateRecordScreenViewModel @Inject constructor(
         data object OnPauseClicked: Event()
         data class OnSliderValueChanged(val position: Int): Event()
         data object OnBackClicked: Event()
+        data class OnTopicTextChanged(val topicText: String): Event()
+        data class OnAddTopicClicked(val topic: String): Event()
+        data class OnTopicClicked(val topic: String): Event()
+        data class OnDeleteTopicButtonClicked(val topic: String): Event()
     }
 
     init {
@@ -47,6 +62,11 @@ class CreateRecordScreenViewModel @Inject constructor(
         fileRecordedPath?.let {
             val audioDuration = audioPlayer.init(audioName = it)
             updateState { copy(audioRecordedDuration = audioDuration) }
+        }
+        viewModelScope.launch {
+            getAllTopicsUseCase().collect {
+                updateState { copy(topicList = it) }
+            }
         }
     }
 
@@ -61,6 +81,47 @@ class CreateRecordScreenViewModel @Inject constructor(
             is Event.OnPlayClicked -> onPlayClicked()
             is Event.OnPauseClicked -> onPauseClicked()
             is Event.OnBackClicked -> onBackClicked()
+            is Event.OnTopicTextChanged -> onTopicTextChanged(topicText = event.topicText)
+            is Event.OnAddTopicClicked -> onAddTopicClicked(topic = event.topic)
+            is Event.OnTopicClicked -> onTopicClicked(event.topic)
+            is Event.OnDeleteTopicButtonClicked -> onDeleteTopicButtonClicked(topic = event.topic)
+        }
+    }
+
+    private fun onTopicClicked(topic: String) {
+        val newList = state.value.selectedTopics.toMutableList().apply { add(topic) }
+        updateState {
+            copy(
+                selectedTopics = newList,
+                topicText = ""
+            )
+        }
+    }
+
+    private fun onDeleteTopicButtonClicked(topic: String) {
+        val newList = state.value.selectedTopics.toMutableList().apply { remove(topic) }
+        updateState { copy(selectedTopics = newList) }
+    }
+
+    private fun onTopicTextChanged(topicText: String) {
+        val filteredList = state.value.topicList.filter { it.name.lowercase().contains(topicText.lowercase()) }
+        updateState {
+            copy(
+                topicText = topicText,
+                filteredTopicList = filteredList
+            )
+        }
+    }
+
+    private fun onAddTopicClicked(topic: String) {
+        viewModelScope.launch {
+            createTopicUseCase(topic)
+            updateState {
+                copy(
+                    topicText = "",
+                    selectedTopics = state.value.selectedTopics.toMutableList().apply { add(topic) }
+                )
+            }
         }
     }
 

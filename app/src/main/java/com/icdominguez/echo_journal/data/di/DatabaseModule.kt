@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.icdominguez.echo_journal.data.database.EchoJournalDatabase
 import com.icdominguez.echo_journal.data.database.EntryDao
+import com.icdominguez.echo_journal.data.database.TopicDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,5 +29,11 @@ object DatabaseModule {
     @Provides
     fun provideEntryDao(echoJournalDatabase: EchoJournalDatabase): EntryDao {
         return echoJournalDatabase.entryDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideTopicDao(echoJournalDatabase: EchoJournalDatabase): TopicDao {
+        return echoJournalDatabase.topicDao()
     }
 }

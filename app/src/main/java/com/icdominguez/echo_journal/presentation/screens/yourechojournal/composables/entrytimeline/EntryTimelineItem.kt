@@ -33,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.icdominguez.echo_journal.R
 import com.icdominguez.echo_journal.common.toHoursAndMinutes
 import com.icdominguez.echo_journal.presentation.designsystem.composables.AudioPlayerComponent
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
