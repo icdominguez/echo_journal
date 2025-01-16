@@ -17,31 +17,31 @@ data class Mood(
 )
 
 object Moods {
-    private val NEUTRAL = Mood(
+    val NEUTRAL = Mood(
         name = "Neutral",
         selectedDrawable = R.drawable.neutral_mood_on,
         unselectedDrawable = R.drawable.neutral_mood_off,
         color = NeutralMood,
     )
-    private val SAD = Mood(
+    val SAD = Mood(
         name = "Sad",
         selectedDrawable = R.drawable.sad_mood_on,
         unselectedDrawable = R.drawable.sad_mood_off,
         color = SadMood,
     )
-    private val EXCITED = Mood(
+    val EXCITED = Mood(
         name = "Excited",
         selectedDrawable = R.drawable.excited_mood_on,
         unselectedDrawable = R.drawable.excited_mood_off,
         color = ExcitedMood,
     )
-    private val STRESSED = Mood(
+    val STRESSED = Mood(
         name = "Stressed",
         selectedDrawable = R.drawable.stressed_mood_on,
         unselectedDrawable = R.drawable.stressed_mood_off,
         color = StressedMood,
     )
-    private val PEACEFUL = Mood(
+    val PEACEFUL = Mood(
         name = "Peaceful",
         selectedDrawable = R.drawable.peaceful_mood_on,
         unselectedDrawable = R.drawable.peaceful_mood_off,

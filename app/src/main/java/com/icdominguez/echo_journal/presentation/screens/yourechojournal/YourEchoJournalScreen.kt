@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import com.icdominguez.echo_journal.R
+import com.icdominguez.echo_journal.common.toTodayYesterdayOrDate
 import com.icdominguez.echo_journal.presentation.designsystem.composables.PermissionDialog
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.CreateEntryFloatingActionButton
@@ -39,6 +40,7 @@ import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composa
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.TopicFilterChip
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.YourEchoJournalTopBar
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.entrytimeline.EntryTimeLineItem
+import java.time.LocalDate
 
 @Composable
 fun YourEchoJournalScreen(
@@ -105,15 +107,29 @@ fun YourEchoJournalScreen(
 
 
                 if (state.filteredEntryList.isNotEmpty()) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(0.dp)
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
                     ) {
-                        itemsIndexed(state.filteredEntryList) { index, entry ->
-                            EntryTimeLineItem(
-                                entry = entry,
-                                index = index,
-                                lastIndex = state.filteredEntryList.lastIndex
+                        val mappedList = state.filteredEntryList.sortedByDescending { it.date }.groupBy { it.date.toLocalDate() }
+
+                        mappedList.map { map ->
+                            Text(
+                                modifier = Modifier
+                                    .padding(bottom = 16.dp),
+                                text = (map.key as LocalDate).toTodayYesterdayOrDate().uppercase(),
+                                style = LocalEchoJournalTypography.current.labelMedium
                             )
+
+                            map.value.map { entry ->
+                                EntryTimeLineItem(
+                                    entry = entry,
+                                    index = map.value.indexOf(entry),
+                                    lastIndex = map.value.lastIndex,
+                                )
+                            }
                         }
                     }
                 } else {

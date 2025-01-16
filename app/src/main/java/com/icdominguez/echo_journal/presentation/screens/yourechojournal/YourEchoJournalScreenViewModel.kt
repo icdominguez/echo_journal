@@ -209,7 +209,7 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         timelineEntriesList: List<Entry> = state.value.entryList
     ): List<Entry> {
         return timelineEntriesList.filter {
-            it.mood in selectedMoodList.map { mood -> mood.name }
+            it.mood.name in selectedMoodList.map { mood -> mood.name }
         }
     }
 
