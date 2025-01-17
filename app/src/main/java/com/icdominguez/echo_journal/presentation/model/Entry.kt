@@ -12,4 +12,5 @@ data class Entry(
     val filePath: String = "",
     val date: LocalDateTime = LocalDateTime.now(),
     val topics: List<String> = emptyList(),
+    val audioDuration: Int = 0,
 )

@@ -1,31 +1,38 @@
 package com.icdominguez.echo_journal.presentation.screens.yourechojournal
 
-import com.icdominguez.echo_journal.data.model.TopicEntity
+import androidx.lifecycle.viewModelScope
+import com.icdominguez.echo_journal.domain.audio.AudioPlayer
 import com.icdominguez.echo_journal.domain.audio.AudioRecorder
 import com.icdominguez.echo_journal.domain.usecase.CreateFileUseCase
 import com.icdominguez.echo_journal.domain.usecase.DeleteFileUseCase
+import com.icdominguez.echo_journal.domain.usecase.GetAllEntriesUseCase
+import com.icdominguez.echo_journal.domain.usecase.GetAllTopicsUseCase
 import com.icdominguez.echo_journal.presentation.MviViewModel
 import com.icdominguez.echo_journal.presentation.model.Entry
-import com.icdominguez.echo_journal.presentation.screens.FakeData
+import com.icdominguez.echo_journal.presentation.model.Topic
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Mood
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class YourEchoJournalScreenViewModel @Inject constructor(
     private val audioRecorder: AudioRecorder,
+    private val audioPlayer: AudioPlayer,
     private val createFileUseCase: CreateFileUseCase,
     private val deleteFileUseCase: DeleteFileUseCase,
+    private val getAllEntriesUseCase: GetAllEntriesUseCase,
+    private val getAllTopicsUseCase: GetAllTopicsUseCase,
 ): MviViewModel<YourEchoJournalScreenViewModel.State, YourEchoJournalScreenViewModel.Event>() {
 
     data class State(
         val showRecordModalBottomSheet: Boolean = false,
         val visiblePermissionDialogQueue: List<String> = emptyList(),
-        val entryList: List<Entry> = FakeData.timelineEntries,
-        val filteredEntryList: List<Entry> = FakeData.timelineEntries,
-        val selectedMoodList: List<Mood> = listOf(),
-        val selectedTopicList: List<TopicEntity> = listOf(),
-        val topicsList: List<TopicEntity> = FakeData.topicsEntries,
+        val entryList: List<Entry> = emptyList(),
+        val filteredEntryList: List<Entry> = emptyList(),
+        val selectedMoodList: List<Mood> = emptyList(),
+        val selectedTopicList: List<Topic> = emptyList(),
+        val topicsList: List<Topic> = emptyList(),
         val filePath: String = "",
     )
 
@@ -47,7 +54,7 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         data class OnMoodItemClicked(val mood: Mood): Event()
         //region: topics filter
         data object OnTopicsChipCloseButtonClicked: Event()
-        data class OnTopicItemClicked(val topic: TopicEntity): Event()
+        data class OnTopicItemClicked(val topic: Topic): Event()
     }
 
     override fun uiEvent(event: Event) {
@@ -63,6 +70,30 @@ class YourEchoJournalScreenViewModel @Inject constructor(
             is Event.OnMoodItemClicked -> onMoodItemClicked(mood = event.mood)
             is Event.OnTopicsChipCloseButtonClicked -> onTopicsChipResetButtonClicked()
             is Event.OnTopicItemClicked -> onTopicItemClicked(topic = event.topic)
+        }
+    }
+
+    init {
+        getAllEntries()
+        getAllTopics()
+    }
+
+    private fun getAllEntries() {
+        viewModelScope.launch {
+            getAllEntriesUseCase().collect { entryList ->
+                updateState { copy(entryList = entryList, filteredEntryList = entryList) }
+                if(entryList.isNotEmpty()) {
+                    audioPlayer.init(entryList[0].filePath)
+                }
+            }
+        }
+    }
+
+    private fun getAllTopics() {
+        viewModelScope.launch {
+            getAllTopicsUseCase().collect { topicList ->
+                updateState { copy(topicsList = topicList) }
+            }
         }
     }
 
@@ -174,8 +205,8 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         }
     }
 
-    private fun onTopicItemClicked(topic: TopicEntity) {
-        val newSelectedTopicList: List<TopicEntity> = if (state.value.selectedTopicList.contains(topic)) {
+    private fun onTopicItemClicked(topic: Topic) {
+        val newSelectedTopicList: List<Topic> = if (state.value.selectedTopicList.contains(topic)) {
             state.value.selectedTopicList - topic
         } else {
             state.value.selectedTopicList + topic
@@ -214,7 +245,7 @@ class YourEchoJournalScreenViewModel @Inject constructor(
     }
 
     private fun filterTopicsList(
-        selectedTopicList: List<TopicEntity> = state.value.selectedTopicList,
+        selectedTopicList: List<Topic> = state.value.selectedTopicList,
         timelineEntriesList: List<Entry> = state.value.entryList
     ): List<Entry> {
         return timelineEntriesList.filter { entry ->

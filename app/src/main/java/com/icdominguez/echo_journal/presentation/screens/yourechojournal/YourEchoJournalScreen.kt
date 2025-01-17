@@ -98,6 +98,7 @@ fun YourEchoJournalScreen(
 
                     item {
                         TopicFilterChip(
+                            topics = state.topicsList,
                             selectedTopicsList = state.selectedTopicList,
                             onCloseButtonClicked = { uiEvent(YourEchoJournalScreenViewModel.Event.OnTopicsChipCloseButtonClicked) },
                             onTopicItemClicked = { topic -> uiEvent(YourEchoJournalScreenViewModel.Event.OnTopicItemClicked(topic = topic)) }
@@ -107,7 +108,6 @@ fun YourEchoJournalScreen(
 
 
                 if (state.filteredEntryList.isNotEmpty()) {
-
                     Column(
                         modifier = Modifier
                             .fillMaxSize()

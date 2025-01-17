@@ -1,26 +1,26 @@
 package com.icdominguez.echo_journal.presentation.screens
 
-import com.icdominguez.echo_journal.data.model.TopicEntity
 import com.icdominguez.echo_journal.presentation.model.Entry
+import com.icdominguez.echo_journal.presentation.model.Topic
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Moods
 import java.time.LocalDateTime
 
 class FakeData {
     companion object {
-        val topicsEntries: List<TopicEntity> = listOf(
-            TopicEntity(name = "Work"),
-            TopicEntity(name = "Friends"),
-            TopicEntity(name = "Family"),
-            TopicEntity(name = "Love"),
-            TopicEntity(name = "Surprise"),
-            TopicEntity(name = "Meditation"),
-            TopicEntity(name = "Nature"),
-            TopicEntity(name = "Stress Management"),
-            TopicEntity(name = "Routine"),
-            TopicEntity(name = "Travel"),
-            TopicEntity(name = "Adventure"),
-            TopicEntity(name = "Goodbyes"),
-            TopicEntity(name = "Friendship")
+        val topicsEntries: List<Topic> = listOf(
+            Topic(name = "Work"),
+            Topic(name = "Friends"),
+            Topic(name = "Family"),
+            Topic(name = "Love"),
+            Topic(name = "Surprise"),
+            Topic(name = "Meditation"),
+            Topic(name = "Nature"),
+            Topic(name = "Stress Management"),
+            Topic(name = "Routine"),
+            Topic(name = "Travel"),
+            Topic(name = "Adventure"),
+            Topic(name = "Goodbyes"),
+            Topic(name = "Friendship")
         )
 
         val timelineEntries: List<Entry> = listOf(
