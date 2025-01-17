@@ -21,6 +21,7 @@ import androidx.compose.ui.window.PopupProperties
 
 @Composable
 fun CustomDropdownMenu(
+    modifier: Modifier = Modifier,
     expanded: Boolean = false,
     focusable: Boolean = true,
     dropdownMenuContent: @Composable () -> Unit = {},
@@ -40,7 +41,7 @@ fun CustomDropdownMenu(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .shadow(
