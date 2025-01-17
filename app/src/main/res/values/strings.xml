@@ -18,4 +18,5 @@
     <string name="start_recording">Start recording your first Echo</string>
     <string name="all_topics">All Topics</string>
     <string name="topics">Topics</string>
+    <string name="add_description">Add Description…</string>
 </resources>

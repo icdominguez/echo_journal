@@ -9,12 +9,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -32,9 +37,12 @@ import com.icdominguez.echo_journal.presentation.designsystem.composables.Associ
 import com.icdominguez.echo_journal.presentation.designsystem.composables.AudioPlayerComponent
 import com.icdominguez.echo_journal.presentation.designsystem.composables.TopicRowItem
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
+import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.CancelButton
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.CreateRecordScreenTopBar
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.CreateTopicItem
+import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.DescriptionTextField
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.EntryTextField
+import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.SaveButton
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.TopicTextField
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.moodselector.MoodSelectorModalBottomSheet
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.filters.CustomDropdownMenu
@@ -93,13 +101,13 @@ fun CreateRecordScreen(
                         )
 
                         EntryTextField(
-                            entryText = state.entryText,
+                            entryText = state.newEntry.title,
                             onEntryTextChange = { uiEvent(CreateRecordScreenViewModel.Event.OnEntryTextChanged(it)) },
                         )
                     }
 
                     AudioPlayerComponent(
-                        audioDuration = state.audioRecordedDuration,
+                        audioDuration = state.newEntry.audioDuration,
                         color = state.selectedMood?.color ?: MaterialTheme.colorScheme.primary,
                         onPlayClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnPlayClicked) },
                         onPauseClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnPauseClicked) },
@@ -122,7 +130,7 @@ fun CreateRecordScreen(
                             )
                         }
 
-                        state.selectedTopics.map { topic ->
+                        state.newEntry.topics.map { topic ->
                             AssociatedTopicItem(
                                 topic = topic,
                                 clickable = true,
@@ -149,14 +157,14 @@ fun CreateRecordScreen(
                                 onDismissRequest = {},
                                 dropdownMenuContent = {
                                     state.filteredTopicList.map { topic ->
-                                        if(!state.selectedTopics.contains(topic.name)) {
+                                        if(!state.newEntry.topics.contains(topic.name)) {
                                             TopicRowItem(
                                                 topic = topic.name,
                                                 onClick = { uiEvent(CreateRecordScreenViewModel.Event.OnTopicClicked(topic.name)) }
                                             )
                                         }
                                     }
-                                    if(state.topicText.isNotEmpty() && !state.selectedTopics.contains(state.topicText) && !state.topicList.any { it.name == state.topicText }) {
+                                    if(state.topicText.isNotEmpty() && !state.newEntry.topics.contains(state.topicText) && !state.topicList.any { it.name == state.topicText }) {
                                         CreateTopicItem(
                                             value = state.topicText,
                                             onClick = { uiEvent(CreateRecordScreenViewModel.Event.OnAddTopicClicked(it)) },
@@ -166,6 +174,53 @@ fun CreateRecordScreen(
                             )
                         }
                     }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .size(16.dp),
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.outlineVariant,
+                        )
+                        DescriptionTextField(
+                            modifier = Modifier
+                                .padding(start = 6.dp),
+                            text = state.newEntry.description,
+                            onDescriptionTextChange = { uiEvent(CreateRecordScreenViewModel.Event.OnDescriptionTextChanged(it)) }
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            top = 24.dp,
+                            bottom = 18.dp,
+                        )
+                        .align(Alignment.BottomCenter)
+                ) {
+                    CancelButton(
+                        modifier = Modifier
+                            .weight(1f),
+                        onClick = { uiEvent(CreateRecordScreenViewModel.Event.OnBackClicked) }
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    SaveButton(
+                        modifier = Modifier
+                            .weight(2f),
+                        enabled = state.isSaveButtonEnabled,
+                        onClick = {
+                            uiEvent(CreateRecordScreenViewModel.Event.OnSaveButtonClicked)
+                            navigateBack()
+                        }
+                    )
                 }
             }
 

@@ -5,7 +5,7 @@ import com.icdominguez.echo_journal.data.model.TopicEntity
 import kotlinx.coroutines.flow.Flow
 
 interface LocalEchoJournalRepository {
-    fun getAll(): Flow<List<EntryEntity>>
+    fun getAllEntries(): Flow<List<EntryEntity>>
     fun getAllTopics(): Flow<List<TopicEntity>>
     suspend fun insert(entryEntity: EntryEntity)
     suspend fun insertTopic(topicEntity: TopicEntity)

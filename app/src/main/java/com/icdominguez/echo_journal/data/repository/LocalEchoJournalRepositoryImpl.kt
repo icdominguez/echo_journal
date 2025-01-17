@@ -1,5 +1,6 @@
 package com.icdominguez.echo_journal.data.repository
 
+import com.icdominguez.echo_journal.data.database.EntryDao
 import com.icdominguez.echo_journal.data.database.TopicDao
 import com.icdominguez.echo_journal.data.model.EntryEntity
 import com.icdominguez.echo_journal.data.model.TopicEntity
@@ -11,10 +12,13 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class LocalEchoJournalRepositoryImpl @Inject constructor(
+    private val entryDao: EntryDao,
     private val topicDao: TopicDao,
 ): LocalEchoJournalRepository {
-    override fun getAll(): Flow<List<EntryEntity>> {
-        TODO("Not yet implemented")
+    override fun getAllEntries() = flow {
+        entryDao.getAll().collect { entry ->
+            emit(entry)
+        }
     }
 
     override fun getAllTopics(): Flow<List<TopicEntity>> = flow {
@@ -24,7 +28,9 @@ class LocalEchoJournalRepositoryImpl @Inject constructor(
     }
 
     override suspend fun insert(entryEntity: EntryEntity) {
-        TODO("Not yet implemented")
+        return withContext(Dispatchers.IO) {
+            entryDao.insertEntry(entryEntity)
+        }
     }
 
     override suspend fun insertTopic(topicEntity: TopicEntity) {
