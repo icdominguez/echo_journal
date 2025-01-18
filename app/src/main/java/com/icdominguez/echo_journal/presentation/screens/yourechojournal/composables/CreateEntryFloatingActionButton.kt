@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.icdominguez.echo_journal.presentation.designsystem.theme.FloatingActionButton
 
 @Composable
 fun CreateEntryFloatingActionButton(
@@ -34,7 +35,7 @@ fun CreateEntryFloatingActionButton(
                 elevation = 4.dp,
                 shape = CircleShape,
                 clip = true,
-                spotColor = Color(android.graphics.Color.parseColor("#1B6EF3"))
+                spotColor = FloatingActionButton
             )
             .background(MaterialTheme.colorScheme.primaryContainer)
             .clickable { onClick() }

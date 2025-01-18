@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Tag
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -39,6 +40,7 @@ import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJou
 import com.icdominguez.echo_journal.presentation.designsystem.theme.TopicBackground
 import com.icdominguez.echo_journal.presentation.model.Entry
 import com.icdominguez.echo_journal.presentation.screens.FakeData
+import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Moods
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -46,8 +48,10 @@ fun EntryTimeLineItem(
     entry: Entry,
     index: Int,
     lastIndex: Int,
-    onAudioPlayerStart: () -> Unit = {},
-    onAudioPlayerPause: () -> Unit = {},
+    onAudioPlayerStarted: (Entry) -> Unit = {},
+    onAudioPlayerPaused: (Entry) -> Unit = {},
+    onSliderValueChanged: (Entry) -> Unit = {},
+    onAudioPlayerEnded: (Entry) -> Unit = {},
 ) {
     Row(
         modifier = Modifier
@@ -62,15 +66,18 @@ fun EntryTimeLineItem(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if(index != 0) {
-                VerticalDivider(modifier = Modifier.height(8.dp))
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(8.dp)
+                )
             }
 
             Image(
-                painter = painterResource(id = entry.mood.selectedDrawable),
+                painter = painterResource(id = entry.mood?.selectedDrawable ?: Moods.SAD.selectedDrawable),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(size = 32.dp)
+                    .size(32.dp)
             )
 
             if (index != lastIndex) {
@@ -123,15 +130,16 @@ fun EntryTimeLineItem(
 
                 //Audio seekbar
                 AudioPlayerComponent(
-                    onPlayClicked = { onAudioPlayerStart() },
-                    color = entry.mood.color,
+                    entry = entry,
+                    onPlayClicked = { onAudioPlayerStarted(it) },
+                    onPauseClicked = { onAudioPlayerPaused(it) },
+                    onSliderValueChanged = { onSliderValueChanged(it) },
+                    onAudioPlayerEnd = { onAudioPlayerEnded(it) }
                 )
 
                 //Description
                 if (entry.description.isNotEmpty()) {
-                    DescriptionText(
-                        text = entry.description
-                    )
+                    DescriptionText(text = entry.description)
                 }
 
                 if (entry.topics.isNotEmpty()) {
@@ -140,6 +148,7 @@ fun EntryTimeLineItem(
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         val topics: List<String> = entry.topics
+
                         topics.forEach { name ->
                             Row(
                                 modifier = Modifier
@@ -151,10 +160,9 @@ fun EntryTimeLineItem(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Image(
-                                    modifier = Modifier.size(14.dp),
-                                    imageVector = Icons.Outlined.Tag,
-                                    contentDescription = null
+                                Text(
+                                    text = "#",
+                                    style = LocalEchoJournalTypography.current.headlineXSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
 
                                 Text(

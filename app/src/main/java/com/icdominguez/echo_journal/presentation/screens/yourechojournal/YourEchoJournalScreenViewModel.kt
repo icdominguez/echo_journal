@@ -42,10 +42,15 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         // region: permissions
         data class OnPermissionResult(val permission: String): Event()
         data object OnPermissionDialogDismissed: Event()
-        //region: audio events
+        // region: audio recorder events
         data object OnRecordAudioPaused: Event()
         data object OnRecordAudioResumed: Event()
         data object OnRecordAudioConfirmed: Event()
+        // region: audio player events
+        data class OnAudioPlayerStarted(val entry: Entry): Event()
+        data class OnAudioPlayerPaused(val entry: Entry): Event()
+        data class OnSliderValueChanged(val entry: Entry): Event()
+        data class OnAudioPlayerEnded(val entry: Entry): Event()
         // region: others
         data object OnCreateEntryFloatingActionButtonClicked: Event()
         data object OnRecordAudioModalSheetDismissed: Event()
@@ -59,11 +64,15 @@ class YourEchoJournalScreenViewModel @Inject constructor(
 
     override fun uiEvent(event: Event) {
         when(event) {
-            is Event.OnPermissionResult -> onPermissionResult(event.permission)
+            is Event.OnPermissionResult -> onPermissionResult(permission = event.permission)
             is Event.OnPermissionDialogDismissed -> onPermissionDialogDismissed()
             is Event.OnRecordAudioPaused -> onRecordAudioPaused()
             is Event.OnRecordAudioResumed -> onRecordAudioResumed()
             is Event.OnRecordAudioConfirmed -> onRecordAudioConfirmed()
+            is Event.OnAudioPlayerStarted -> onAudioPlayerStarted(entry = event.entry)
+            is Event.OnAudioPlayerPaused -> onAudioPlayerPaused(entry = event.entry)
+            is Event.OnSliderValueChanged -> onSliderValueChanged(entry = event.entry)
+            is Event.OnAudioPlayerEnded -> onAudioPlayerEnded(entry = event.entry)
             is Event.OnCreateEntryFloatingActionButtonClicked -> onCreateEntryFloatingActionButtonClicked()
             is Event.OnRecordAudioModalSheetDismissed -> onRecordAudioModalSheetDismissed()
             is Event.OnMoodsChipCloseButtonClicked -> onMoodsChipResetButtonClicked()
@@ -78,25 +87,7 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         getAllTopics()
     }
 
-    private fun getAllEntries() {
-        viewModelScope.launch {
-            getAllEntriesUseCase().collect { entryList ->
-                updateState { copy(entryList = entryList, filteredEntryList = entryList) }
-                if(entryList.isNotEmpty()) {
-                    audioPlayer.init(entryList[0].filePath)
-                }
-            }
-        }
-    }
-
-    private fun getAllTopics() {
-        viewModelScope.launch {
-            getAllTopicsUseCase().collect { topicList ->
-                updateState { copy(topicsList = topicList) }
-            }
-        }
-    }
-
+    // region: events
     private fun onPermissionResult(permission: String) {
         updateState {
             copy(
@@ -132,8 +123,75 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         audioRecorder.stop()
     }
 
+    private fun onAudioPlayerStarted(entry: Entry) {
+        val newList = state.value.filteredEntryList.toMutableList().map {
+            if(it.isPlaying) {
+                it.copy(
+                    isPlaying = false,
+                    audioProgress = audioPlayer.pause()
+                )
+            } else if(it.filePath == entry.filePath) {
+                it.copy(isPlaying = true)
+            } else {
+                it
+            }
+        }
+
+        if (entry.audioProgress > 0) {
+            audioPlayer.playFrom(entry.filePath, entry.audioProgress)
+        } else {
+            audioPlayer.play(entry.filePath)
+        }
+
+        updateState { copy(filteredEntryList = newList) }
+    }
+
+    private fun onAudioPlayerPaused(entry: Entry) {
+        val newList = state.value.filteredEntryList.toMutableList().map {
+            if(it.filePath == entry.filePath) {
+                it.copy(
+                    isPlaying = false,
+                    audioProgress = audioPlayer.pause()
+                )
+            } else {
+                it.copy(isPlaying = false)
+            }
+        }
+
+        updateState { copy(filteredEntryList = newList) }
+    }
+
+    private fun onAudioPlayerEnded(entry: Entry) {
+        val newList = state.value.filteredEntryList.toMutableList().map {
+            if(it.filePath == entry.filePath) {
+                it.copy(isPlaying = false, audioProgress = 0)
+            } else {
+                it
+            }
+        }
+
+        audioPlayer.stop()
+        updateState { copy(filteredEntryList = newList) }
+    }
+
+    private fun onSliderValueChanged(entry: Entry) {
+        val newList = state.value.filteredEntryList.toMutableList().map {
+            if (it.filePath == entry.filePath) {
+                it.copy(audioProgress = entry.audioProgress)
+            } else {
+                it
+            }
+        }
+        if(entry.isPlaying) {
+            audioPlayer.playFrom(entry.filePath, entry.audioProgress)
+        }
+        updateState { copy(filteredEntryList = newList) }
+    }
+
     private fun onCreateEntryFloatingActionButtonClicked() {
         val filePath = createFileUseCase()
+        val audioPlaying = state.value.filteredEntryList.firstOrNull { it.isPlaying }
+        audioPlaying?.let { onAudioPlayerPaused(audioPlaying) }
         updateState { copy(showRecordModalBottomSheet = true, filePath = filePath) }
         audioRecorder.init(filePath)
         audioRecorder.start()
@@ -149,7 +207,7 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         val newFilteredEntryList = if (state.value.selectedTopicList.isEmpty()) {
             state.value.entryList
         } else {
-            filterTopicsList()
+            filterEntryListByTopic()
         }
 
         updateState {
@@ -169,14 +227,9 @@ class YourEchoJournalScreenViewModel @Inject constructor(
 
         val newFilteredEntryList = if (newSelectedMoodList.isNotEmpty()) {
             if (state.value.selectedTopicList.isEmpty()) {
-                filterMoodsList(
-                    selectedMoodList = newSelectedMoodList
-                )
+                filterEntryListByMood(selectedMoodList = newSelectedMoodList)
             } else {
-                filterMoodsList(
-                    selectedMoodList = newSelectedMoodList,
-                    timelineEntriesList = state.value.filteredEntryList
-                )
+                filterEntryListByMood(selectedMoodList = newSelectedMoodList,)
             }
         } else {
             state.value.entryList
@@ -191,10 +244,10 @@ class YourEchoJournalScreenViewModel @Inject constructor(
     }
 
     private fun onTopicsChipResetButtonClicked() {
-        val newFilteredEntryList = if (state.value.selectedMoodList.isEmpty()){
+        val newFilteredEntryList = if (state.value.selectedMoodList.isEmpty()) {
             state.value.entryList
         } else {
-            filterMoodsList()
+            filterEntryListByMood()
         }
 
         updateState {
@@ -214,14 +267,9 @@ class YourEchoJournalScreenViewModel @Inject constructor(
 
         val newFilteredEntryList = if (newSelectedTopicList.isNotEmpty()) {
             if (state.value.selectedMoodList.isEmpty()) {
-                filterTopicsList(
-                    selectedTopicList = newSelectedTopicList
-                )
+                filterEntryListByTopic(selectedTopicList = newSelectedTopicList)
             } else {
-                filterTopicsList(
-                    selectedTopicList = newSelectedTopicList,
-                    timelineEntriesList = state.value.filteredEntryList
-                )
+                filterEntryListByTopic(selectedTopicList = newSelectedTopicList)
             }
         } else {
             state.value.entryList
@@ -234,25 +282,44 @@ class YourEchoJournalScreenViewModel @Inject constructor(
             )
         }
     }
+    // end region
 
-    private fun filterMoodsList(
-        selectedMoodList: List<Mood> = state.value.selectedMoodList,
-        timelineEntriesList: List<Entry> = state.value.entryList
-    ): List<Entry> {
-        return timelineEntriesList.filter {
-            it.mood.name in selectedMoodList.map { mood -> mood.name }
+    // region: others
+    private fun getAllEntries() {
+        viewModelScope.launch {
+            getAllEntriesUseCase().collect { entryList ->
+                updateState { copy(entryList = entryList, filteredEntryList = entryList) }
+                if(entryList.isNotEmpty()) {
+                    audioPlayer.init(entryList[0].filePath)
+                }
+            }
         }
     }
 
-    private fun filterTopicsList(
-        selectedTopicList: List<Topic> = state.value.selectedTopicList,
-        timelineEntriesList: List<Entry> = state.value.entryList
+    private fun getAllTopics() {
+        viewModelScope.launch {
+            getAllTopicsUseCase().collect { topicList ->
+                updateState { copy(topicsList = topicList) }
+            }
+        }
+    }
+
+    private fun filterEntryListByMood(
+        selectedMoodList: List<Mood> = state.value.selectedMoodList,
     ): List<Entry> {
-        return timelineEntriesList.filter { entry ->
+        return state.value.entryList.filter {
+            it.mood?.name in selectedMoodList.map { mood -> mood.name }
+        }
+    }
+
+    private fun filterEntryListByTopic(
+        selectedTopicList: List<Topic> = state.value.selectedTopicList,
+    ): List<Entry> {
+        return state.value.entryList.filter { entry ->
             entry.topics.any { topic ->
                 topic in selectedTopicList.map { it.name }
             }
         }
     }
-
+    // endregion
 }

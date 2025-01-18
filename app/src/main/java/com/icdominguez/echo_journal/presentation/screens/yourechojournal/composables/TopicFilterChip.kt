@@ -9,10 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,13 +20,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.icdominguez.echo_journal.R
+import com.icdominguez.echo_journal.presentation.designsystem.composables.TopicRowItem
 import com.icdominguez.echo_journal.presentation.designsystem.theme.BackgroundMoodItemSelected
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
-import com.icdominguez.echo_journal.presentation.designsystem.theme.Primary30
 import com.icdominguez.echo_journal.presentation.designsystem.theme.SecondaryContainer
 import com.icdominguez.echo_journal.presentation.model.Topic
 
-private const val maxSize = 2
+private const val MAX_VISIBLE_MOODS = 2
 
 @Composable
 fun TopicFilterChip(
@@ -49,10 +46,10 @@ fun TopicFilterChip(
                 var text = stringResource(id = R.string.all_topics)
 
                 if (selectedTopicsList.isNotEmpty()) {
-                    text = if (selectedTopicsList.size > maxSize) {
+                    text = if (selectedTopicsList.size > MAX_VISIBLE_MOODS) {
                         "${selectedTopicsList[0].name}," +
                                 " ${selectedTopicsList[1].name} " +
-                                "+ ${selectedTopicsList.size - maxSize}"
+                                "+ ${selectedTopicsList.size - MAX_VISIBLE_MOODS}"
                     } else {
                         if (selectedTopicsList.size == 1) {
                             selectedTopicsList[0].name
@@ -71,9 +68,7 @@ fun TopicFilterChip(
                 if (selectedTopicsList.isNotEmpty()) {
                     Image(
                         modifier = Modifier
-                            .clickable {
-                                onCloseButtonClicked()
-                            }
+                            .clickable { onCloseButtonClicked() }
                             .size(18.dp),
                         imageVector = Icons.Default.Close,
                         contentDescription = null,
@@ -84,39 +79,21 @@ fun TopicFilterChip(
         },
         dropdownMenuContent = {
             topics.forEach { topic ->
-                DropdownMenuItem(
+                val isSelected = selectedTopicsList.contains(topic)
+                TopicRowItem(
                     modifier = Modifier
-                        .padding(vertical = 2.dp, horizontal = 4.dp)
+                        .padding(
+                            vertical = 2.dp, horizontal = 4.dp
+                        )
                         .background(
-                            color = if (selectedTopicsList.contains(topic)) BackgroundMoodItemSelected.copy(
+                            color = if (isSelected) BackgroundMoodItemSelected.copy(
                                 alpha = 0.05f
                             ) else Color.Transparent,
                             shape = RoundedCornerShape(size = 8.dp)
                         ),
-                    text = {
-                        Text(
-                            text = topic.name,
-                            style = LocalEchoJournalTypography.current.button
-                        )
-                    },
-                    leadingIcon = {
-                        Text(
-                            text = "#",
-                            style = LocalEchoJournalTypography.current.button.copy(color = MaterialTheme.colorScheme.primary)
-                        )
-                    },
-                    trailingIcon = {
-                        if (selectedTopicsList.contains(topic)) {
-                            Image(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(Primary30)
-                            )
-                        }
-                    },
-                    onClick = {
-                        onTopicItemClicked(topic)
-                    }
+                    topic = topic.name,
+                    onClick = { onTopicItemClicked(topic) },
+                    isSelected = isSelected
                 )
             }
         }

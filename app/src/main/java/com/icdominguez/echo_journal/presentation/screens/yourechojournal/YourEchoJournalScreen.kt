@@ -28,11 +28,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import com.icdominguez.echo_journal.R
 import com.icdominguez.echo_journal.common.toTodayYesterdayOrDate
 import com.icdominguez.echo_journal.presentation.designsystem.composables.PermissionDialog
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
+import com.icdominguez.echo_journal.presentation.designsystem.theme.ScreenBg1
+import com.icdominguez.echo_journal.presentation.designsystem.theme.ScreenBg2
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.CreateEntryFloatingActionButton
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.MoodFilterChip
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.RecordAudioModalBottomSheet
@@ -68,41 +71,42 @@ fun YourEchoJournalScreen(
     ) { innerPadding ->
         Box(
             modifier = Modifier
+                .zIndex(1f)
                 .fillMaxSize()
                 .background(
                     brush = Brush
-                        .linearGradient(
-                            colors = listOf(
-                                Color(android.graphics.Color.parseColor("#D9E2FF")).copy(alpha = 0.4f),
-                                Color(android.graphics.Color.parseColor("#EEF0FF")).copy(alpha = 0.4f)
-                            ),
-                        )
+                        .linearGradient(colors = listOf(ScreenBg1, ScreenBg2),)
                 )
                 .padding(innerPadding),
         ) {
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .zIndex(2f),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 LazyRow (
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    item {
-                        MoodFilterChip(
-                            selectedMoodList = state.selectedMoodList,
-                            onCloseButtonClicked = { uiEvent(YourEchoJournalScreenViewModel.Event.OnMoodsChipCloseButtonClicked) },
-                            onMoodItemClicked = { mood -> uiEvent(YourEchoJournalScreenViewModel.Event.OnMoodItemClicked(mood = mood)) }
-                        )
+                    if(state.entryList.isNotEmpty()) {
+                        item {
+                            MoodFilterChip(
+                                selectedMoodList = state.selectedMoodList,
+                                onCloseButtonClicked = { uiEvent(YourEchoJournalScreenViewModel.Event.OnMoodsChipCloseButtonClicked) },
+                                onMoodItemClicked = { mood -> uiEvent(YourEchoJournalScreenViewModel.Event.OnMoodItemClicked(mood = mood)) }
+                            )
+                        }
                     }
 
-                    item {
-                        TopicFilterChip(
-                            topics = state.topicsList,
-                            selectedTopicsList = state.selectedTopicList,
-                            onCloseButtonClicked = { uiEvent(YourEchoJournalScreenViewModel.Event.OnTopicsChipCloseButtonClicked) },
-                            onTopicItemClicked = { topic -> uiEvent(YourEchoJournalScreenViewModel.Event.OnTopicItemClicked(topic = topic)) }
-                        )
+                    if(state.topicsList.isNotEmpty()) {
+                        item {
+                            TopicFilterChip(
+                                topics = state.topicsList,
+                                selectedTopicsList = state.selectedTopicList.sortedBy { it.name },
+                                onCloseButtonClicked = { uiEvent(YourEchoJournalScreenViewModel.Event.OnTopicsChipCloseButtonClicked) },
+                                onTopicItemClicked = { topic -> uiEvent(YourEchoJournalScreenViewModel.Event.OnTopicItemClicked(topic = topic)) }
+                            )
+                        }
                     }
                 }
 
@@ -128,6 +132,10 @@ fun YourEchoJournalScreen(
                                     entry = entry,
                                     index = map.value.indexOf(entry),
                                     lastIndex = map.value.lastIndex,
+                                    onAudioPlayerStarted = { uiEvent(YourEchoJournalScreenViewModel.Event.OnAudioPlayerStarted(it)) },
+                                    onAudioPlayerPaused = { uiEvent(YourEchoJournalScreenViewModel.Event.OnAudioPlayerPaused(it)) },
+                                    onSliderValueChanged = { uiEvent(YourEchoJournalScreenViewModel.Event.OnSliderValueChanged(it)) },
+                                    onAudioPlayerEnded = { uiEvent(YourEchoJournalScreenViewModel.Event.OnAudioPlayerEnded(it)) },
                                 )
                             }
                         }

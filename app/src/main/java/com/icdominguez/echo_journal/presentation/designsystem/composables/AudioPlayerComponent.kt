@@ -21,7 +21,6 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +33,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.icdominguez.echo_journal.common.millisToMinutesSecondsFormat
+import com.icdominguez.echo_journal.presentation.model.Entry
+import com.icdominguez.echo_journal.presentation.screens.FakeData
+import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Moods
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
@@ -41,25 +43,24 @@ import kotlinx.coroutines.isActive
 @Composable
 fun AudioPlayerComponent(
     modifier: Modifier = Modifier,
-    audioDuration: Int = 0,
-    onPlayClicked: () -> Unit = {},
-    onPauseClicked: () -> Unit = {},
-    onSliderValueChanged: (Int) -> Unit = {},
-    color: Color = MaterialTheme.colorScheme.primary,
+    entry: Entry,
+    onPlayClicked: (Entry) -> Unit = {},
+    onPauseClicked: (Entry) -> Unit = {},
+    onSliderValueChanged: (Entry) -> Unit = {},
+    onAudioPlayerEnd: (Entry) -> Unit = {},
 ) {
     var currentSecondsPlaying by remember { mutableFloatStateOf(0f) }
     var secondsString by remember { mutableStateOf("00:00") }
-    var playing by remember { mutableStateOf(false) }
 
-    LaunchedEffect(playing) {
-        if(playing) {
+    LaunchedEffect(entry.isPlaying) {
+        if(entry.isPlaying) {
             while (isActive) {
-                if(currentSecondsPlaying < audioDuration.toFloat()) {
+                if(currentSecondsPlaying < entry.audioDuration.toFloat()) {
                     delay(1000)
                     currentSecondsPlaying += 1000f
                     secondsString = currentSecondsPlaying.toLong().millisToMinutesSecondsFormat()
                 } else {
-                    playing = false
+                    onAudioPlayerEnd(entry)
                     currentSecondsPlaying = 0f
                     secondsString = "00:00"
                 }
@@ -71,7 +72,9 @@ fun AudioPlayerComponent(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape = RoundedCornerShape(50.dp))
-            .background(color = color.copy(alpha = 0.1f))
+            .background(
+                color = entry.mood?.color?.copy(alpha = 0.1f) ?: Moods.SAD.color.copy(alpha = 0.1f)
+            )
             .padding(
                 top = 4.dp,
                 bottom = 4.dp,
@@ -88,14 +91,12 @@ fun AudioPlayerComponent(
                     .size(32.dp)
                     .background(Color.White)
                     .clickable(
-                        enabled = audioDuration > 0L,
+                        enabled = entry.audioDuration > 0L,
                         onClick = {
-                            if(playing) {
-                                playing = false
-                                onPauseClicked()
+                            if(entry.isPlaying) {
+                                onPauseClicked(entry)
                             } else{
-                                playing = true
-                                onPlayClicked()
+                                onPlayClicked(entry)
                             }
                         }
                     )
@@ -103,8 +104,8 @@ fun AudioPlayerComponent(
                 Icon(
                     modifier = Modifier
                         .align(Alignment.Center),
-                    imageVector = if(playing) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    tint = color,
+                    imageVector = if(entry.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    tint = entry.mood?.color ?: Moods.SAD.color,
                     contentDescription = null,
                 )
             }
@@ -115,23 +116,17 @@ fun AudioPlayerComponent(
                     .height(32.dp)
                     .padding(horizontal = 6.dp),
                 colors = SliderDefaults.colors(
-                    activeTrackColor = color,
-                    inactiveTickColor = color.copy(alpha = 0.8f)
+                    activeTrackColor = entry.mood?.color ?: Moods.SAD.color,
+                    inactiveTickColor = entry.mood?.color?.copy(alpha = 0.8f) ?: Moods.SAD.color.copy(alpha = 0.8f)
                 ),
                 value = currentSecondsPlaying,
-                valueRange = 0f..audioDuration.toFloat(),
+                valueRange = 0f..entry.audioDuration.toFloat(),
                 onValueChange = { newValue ->
                     currentSecondsPlaying = (newValue / 1000).toInt() * 1000F
                     secondsString = currentSecondsPlaying.toLong().millisToMinutesSecondsFormat()
-                    onSliderValueChanged(newValue.toInt())
+                    onSliderValueChanged(entry.copy(audioProgress = newValue.toInt()))
                 },
                 track = { sliderState ->
-                    val fraction by remember {
-                        derivedStateOf {
-                            (sliderState.value - sliderState.valueRange.start) /
-                                    (sliderState.valueRange.endInclusive - sliderState.valueRange.start)
-                        }
-                    }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -140,10 +135,13 @@ fun AudioPlayerComponent(
                     ) {
                         Box(
                             Modifier
-                                .fillMaxWidth(fraction)
+                                .fillMaxWidth(
+                                    (sliderState.value - sliderState.valueRange.start) /
+                                            (sliderState.valueRange.endInclusive - sliderState.valueRange.start)
+                                )
                                 .height(4.dp)
                                 .background(
-                                    color = color,
+                                    color = entry.mood?.color ?: MaterialTheme.colorScheme.primary,
                                     shape = RoundedCornerShape(8.dp)
                                 )
                         )
@@ -152,7 +150,7 @@ fun AudioPlayerComponent(
                                 .fillMaxWidth(1f)
                                 .height(4.dp)
                                 .background(
-                                    color = color.copy(alpha = 0.3f),
+                                    color = entry.mood?.color?.copy(0.3f) ?: MaterialTheme.colorScheme.primary.copy(0.3f),
                                     shape = RoundedCornerShape(8.dp)
                                 )
                         )
@@ -167,7 +165,7 @@ fun AudioPlayerComponent(
                     style = MaterialTheme.typography.bodySmall,
                 )
                 Text(
-                    text = "/${audioDuration.toLong().millisToMinutesSecondsFormat()}",
+                    text = "/${entry.audioDuration.toLong().millisToMinutesSecondsFormat()}",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -177,8 +175,8 @@ fun AudioPlayerComponent(
 
 @Preview(showBackground = true)
 @Composable
-private fun AudioSeekbarPreview() {
+private fun AudioPlayerComponentPreview() {
     AudioPlayerComponent(
-        color = MaterialTheme.colorScheme.primary,
+        entry = FakeData.timelineEntries[0],
     )
 }
