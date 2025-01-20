@@ -19,4 +19,8 @@
     <string name="all_topics">All Topics</string>
     <string name="topics">Topics</string>
     <string name="add_description">Add Description…</string>
+    <string name="leave_entry_dialog_title">Leave new entry?</string>
+    <string name="leave_entry_dialog_message">Are you sure you want to go back? Audio will disappear and you will need to record it again</string>
+    <string name="leave_entry_dialog_confirm_button">Leave</string>
+    <string name="leave_entry_dialog_dismiss_button">Cancel</string>
 </resources>

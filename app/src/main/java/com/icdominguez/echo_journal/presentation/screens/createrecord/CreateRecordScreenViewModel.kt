@@ -37,6 +37,7 @@ class CreateRecordScreenViewModel @Inject constructor(
         val topicText: String = "",
         val topicList: List<Topic> = emptyList(),
         val filteredTopicList: List<Topic> = emptyList(),
+        val shouldShowLeaveNewEntryDialog: Boolean = false,
     ) {
         val isSaveButtonEnabled: Boolean = newEntry.title.isNotEmpty() && newEntry.mood != null
     }
@@ -65,6 +66,9 @@ class CreateRecordScreenViewModel @Inject constructor(
         data class OnDescriptionTextChanged(val descriptionText: String): Event()
         // region: buttons
         data object OnSaveButtonClicked: Event()
+        // region: dialog
+        data object OnLeaveNewRecordDialogConfirmed: Event()
+        data object OnLeaveNewRecordDialogDismissed: Event()
         // region: others
         data object OnBackClicked: Event()
     }
@@ -101,6 +105,8 @@ class CreateRecordScreenViewModel @Inject constructor(
             is Event.OnAddTopicClicked -> onAddTopicClicked(topic = event.topic)
             is Event.OnDescriptionTextChanged -> onDescriptionTextChanged(descriptionText = event.descriptionText)
             is Event.OnSaveButtonClicked -> onSaveButtonClicked()
+            is Event.OnLeaveNewRecordDialogConfirmed -> onLeaveNewRecordDialogConfirmed()
+            is Event.OnLeaveNewRecordDialogDismissed -> onLeaveNewRecordDialogDismissed()
             is Event.OnBackClicked -> onBackClicked()
         }
     }
@@ -224,11 +230,19 @@ class CreateRecordScreenViewModel @Inject constructor(
         }
     }
 
-    private fun onBackClicked() {
+    private fun onLeaveNewRecordDialogConfirmed() {
         fileRecordedPath?.let {
             audioPlayer.reset()
             deleteFileUseCase(it)
         }
+    }
+
+    private fun onLeaveNewRecordDialogDismissed() {
+        updateState { copy(shouldShowLeaveNewEntryDialog = false) }
+    }
+
+    private fun onBackClicked() {
+        updateState { copy(shouldShowLeaveNewEntryDialog = true) }
     }
     // endregion
 }
