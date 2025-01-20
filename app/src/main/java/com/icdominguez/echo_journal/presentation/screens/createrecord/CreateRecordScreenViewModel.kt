@@ -25,13 +25,12 @@ class CreateRecordScreenViewModel @Inject constructor(
     private val getAllTopicsUseCase: GetAllTopicsUseCase,
     private val createTopicUseCase: CreateTopicUseCase,
     private val createEntryUseCase: CreateEntryUseCase,
-    ): MviViewModel<CreateRecordScreenViewModel.State, CreateRecordScreenViewModel.Event>() {
+): MviViewModel<CreateRecordScreenViewModel.State, CreateRecordScreenViewModel.Event>() {
 
     private var fileRecordedPath: String? = null
 
     data class State(
         val newEntry: Entry = Entry(),
-        val selectedMood: Mood? = null,
         val moodSelectorModalBottomSheetSelected: Mood? = null,
         val showMoodSelectorModalBottomSheet: Boolean = false,
         val moodList: List<Mood> = Moods.allMods,
@@ -39,35 +38,35 @@ class CreateRecordScreenViewModel @Inject constructor(
         val topicList: List<Topic> = emptyList(),
         val filteredTopicList: List<Topic> = emptyList(),
     ) {
-        val isSaveButtonEnabled: Boolean = newEntry.title.isNotEmpty() && selectedMood != null
+        val isSaveButtonEnabled: Boolean = newEntry.title.isNotEmpty() && newEntry.mood != null
     }
 
     override var currentState: State = State()
 
     sealed class Event {
-        // region: Entry
+        // region: entry
         data class OnEntryTextChanged(val entryText: String): Event()
-        // region: Mood modal bottom sheet
+        // region: mood modal bottom sheet
         data object OnAddMoodButtonClicked: Event()
         data class OnMoodClicked(val mood: Mood): Event()
         data object OnMoodSelectorModalBottomSheetConfirmed: Event()
         data object OnMoodSelectorModalBottomSheetDismissed: Event()
-        // region: Player
-        data object OnPlayClicked: Event()
-        data object OnPauseClicked: Event()
-        data class OnSliderValueChanged(val position: Int): Event()
-        // region: Topics
+        // region: player
+        data class OnAudioPlayerStarted(val entry: Entry): Event()
+        data class OnAudioPlayerPaused(val entry: Entry): Event()
+        data class OnSliderValueChanged(val entry: Entry): Event()
+        data class OnAudioPlayerEnded(val entry: Entry): Event()
+        // region: topics
         data class OnTopicTextChanged(val topicText: String): Event()
-        data class OnAddTopicClicked(val topic: String): Event()
         data class OnTopicClicked(val topic: String): Event()
         data class OnDeleteTopicButtonClicked(val topic: String): Event()
-        // region: Description
+        data class OnAddTopicClicked(val topic: String): Event()
+        // region: description
         data class OnDescriptionTextChanged(val descriptionText: String): Event()
-        // region: Buttons
+        // region: buttons
         data object OnSaveButtonClicked: Event()
-        // region: Others
+        // region: others
         data object OnBackClicked: Event()
-
     }
 
     init {
@@ -90,32 +89,100 @@ class CreateRecordScreenViewModel @Inject constructor(
             is Event.OnEntryTextChanged -> onEntryTextChanged(entryText = event.entryText)
             is Event.OnAddMoodButtonClicked -> onAddMoodButtonClicked()
             is Event.OnMoodClicked -> onMoodClicked(mood = event.mood)
-            is Event.OnMoodSelectorModalBottomSheetDismissed -> onMoodSelectorModalBottomSheetDismissed()
             is Event.OnMoodSelectorModalBottomSheetConfirmed -> onMoodSelectorModalBottomSheetConfirmed()
-            is Event.OnPlayClicked -> onPlayClicked()
-            is Event.OnPauseClicked -> onPauseClicked()
-            is Event.OnSliderValueChanged -> onSliderValueChanged(position = event.position)
+            is Event.OnMoodSelectorModalBottomSheetDismissed -> onMoodSelectorModalBottomSheetDismissed()
+            is Event.OnAudioPlayerStarted -> onAudioPlayerStarted(entry = event.entry)
+            is Event.OnAudioPlayerPaused -> onAudioPlayerPaused(entry = event.entry)
+            is Event.OnSliderValueChanged -> onSliderValueChanged(entry = event.entry)
+            is Event.OnAudioPlayerEnded -> onAudioPlayerEnded(entry = event.entry)
             is Event.OnTopicTextChanged -> onTopicTextChanged(topicText = event.topicText)
-            is Event.OnAddTopicClicked -> onAddTopicClicked(topic = event.topic)
             is Event.OnTopicClicked -> onTopicClicked(event.topic)
             is Event.OnDeleteTopicButtonClicked -> onDeleteTopicButtonClicked(topic = event.topic)
+            is Event.OnAddTopicClicked -> onAddTopicClicked(topic = event.topic)
             is Event.OnDescriptionTextChanged -> onDescriptionTextChanged(descriptionText = event.descriptionText)
             is Event.OnSaveButtonClicked -> onSaveButtonClicked()
             is Event.OnBackClicked -> onBackClicked()
         }
     }
 
-    private fun onDescriptionTextChanged(descriptionText: String) {
-        updateState { copy(newEntry = state.value.newEntry.copy(description = descriptionText)) }
+    // region: events
+    private fun onEntryTextChanged(entryText: String) {
+        updateState { copy(newEntry = state.value.newEntry.copy(title = entryText)) }
     }
 
-    private fun onSaveButtonClicked() {
-        viewModelScope.launch {
-            state.value.selectedMood?.name?.let {
-                createEntryUseCase(
-                    entry = state.value.newEntry
+    private fun onAddMoodButtonClicked() {
+        updateState {
+            copy(
+                showMoodSelectorModalBottomSheet = true,
+                moodSelectorModalBottomSheetSelected = state.value.newEntry.mood
+            )
+        }
+    }
+
+    private fun onMoodClicked(mood: Mood) {
+        updateState { copy(moodSelectorModalBottomSheetSelected = if(mood.name == moodSelectorModalBottomSheetSelected?.name) null else mood) }
+    }
+
+    private fun onMoodSelectorModalBottomSheetConfirmed() {
+        audioPlayer.reset()
+        state.value.moodSelectorModalBottomSheetSelected?.let {
+            updateState {
+                copy(
+                    showMoodSelectorModalBottomSheet = false,
+                    newEntry = state.value.newEntry.copy(mood = it)
                 )
             }
+        }
+    }
+
+    private fun onMoodSelectorModalBottomSheetDismissed() {
+        updateState {
+            copy(
+                showMoodSelectorModalBottomSheet = false,
+                moodSelectorModalBottomSheetSelected = null,
+            )
+        }
+    }
+
+    private fun onAudioPlayerStarted(entry: Entry) {
+        if(state.value.newEntry.audioProgress > 0) {
+            audioPlayer.playFrom(entry.filePath, entry.audioProgress)
+        } else {
+            audioPlayer.play(entry.filePath)
+        }
+        updateState { copy(newEntry = state.value.newEntry.copy(isPlaying = true)) }
+    }
+
+    private fun onAudioPlayerPaused(entry: Entry) {
+        updateState {
+            copy(
+                newEntry = state.value.newEntry.copy(
+                    isPlaying = false,
+                    audioProgress = audioPlayer.pause()
+                )
+            )
+        }
+    }
+
+    private fun onSliderValueChanged(entry: Entry) {
+        if(state.value.newEntry.isPlaying) {
+            audioPlayer.playFrom(entry.filePath, entry.audioProgress)
+        }
+        updateState { copy(newEntry = state.value.newEntry.copy(audioProgress = entry.audioProgress)) }
+    }
+
+    private fun onAudioPlayerEnded(entry: Entry) {
+        audioPlayer.stop()
+        updateState { copy(newEntry = state.value.newEntry.copy(isPlaying = false, audioProgress = 0)) }
+    }
+
+    private fun onTopicTextChanged(topicText: String) {
+        val filteredList = state.value.topicList.filter { it.name.lowercase().contains(topicText.lowercase()) }
+        updateState {
+            copy(
+                topicText = topicText,
+                filteredTopicList = filteredList
+            )
         }
     }
 
@@ -134,16 +201,6 @@ class CreateRecordScreenViewModel @Inject constructor(
         updateState { copy(newEntry = state.value.newEntry.copy(topics = newList)) }
     }
 
-    private fun onTopicTextChanged(topicText: String) {
-        val filteredList = state.value.topicList.filter { it.name.lowercase().contains(topicText.lowercase()) }
-        updateState {
-            copy(
-                topicText = topicText,
-                filteredTopicList = filteredList
-            )
-        }
-    }
-
     private fun onAddTopicClicked(topic: String) {
         viewModelScope.launch {
             createTopicUseCase(topic)
@@ -156,55 +213,15 @@ class CreateRecordScreenViewModel @Inject constructor(
         }
     }
 
-    private fun onPlayClicked() {
-        audioPlayer.play()
+    private fun onDescriptionTextChanged(descriptionText: String) {
+        updateState { copy(newEntry = state.value.newEntry.copy(description = descriptionText)) }
     }
 
-    private fun onPauseClicked() {
-        audioPlayer.pause()
-    }
-
-    private fun onEntryTextChanged(entryText: String) {
-        updateState {
-            copy(newEntry = state.value.newEntry.copy(title = entryText))
+    private fun onSaveButtonClicked() {
+        audioPlayer.reset()
+        viewModelScope.launch {
+            createEntryUseCase(entry = state.value.newEntry)
         }
-    }
-
-    private fun onAddMoodButtonClicked() {
-        updateState {
-            copy(
-                showMoodSelectorModalBottomSheet = true,
-                moodSelectorModalBottomSheetSelected = state.value.selectedMood
-            )
-        }
-    }
-
-    private fun onMoodClicked(mood: Mood) {
-        updateState {
-            copy(moodSelectorModalBottomSheetSelected = if(mood.name == moodSelectorModalBottomSheetSelected?.name) null else mood)
-        }
-    }
-
-    private fun onMoodSelectorModalBottomSheetDismissed() {
-        updateState {
-            copy(
-                showMoodSelectorModalBottomSheet = false,
-                moodSelectorModalBottomSheetSelected = null,
-            )
-        }
-    }
-
-    private fun onMoodSelectorModalBottomSheetConfirmed() {
-        updateState {
-            copy(
-                showMoodSelectorModalBottomSheet = false,
-                selectedMood = state.value.moodSelectorModalBottomSheetSelected
-            )
-        }
-    }
-
-    private fun onSliderValueChanged(position: Int) {
-        audioPlayer.playFrom(millis = position)
     }
 
     private fun onBackClicked() {
@@ -213,4 +230,5 @@ class CreateRecordScreenViewModel @Inject constructor(
             deleteFileUseCase(it)
         }
     }
+    // endregion
 }

@@ -96,7 +96,7 @@ fun CreateRecordScreen(
                                     uiEvent(CreateRecordScreenViewModel.Event.OnAddMoodButtonClicked)
                                 }
                                 .size(32.dp),
-                            painter = painterResource(if(state.selectedMood != null) state.selectedMood.selectedDrawable else R.drawable.add_mood_button),
+                            painter = painterResource(if(state.newEntry.mood != null) state.newEntry.mood.selectedDrawable else R.drawable.add_mood_button),
                             contentDescription = null
                         )
 
@@ -107,11 +107,11 @@ fun CreateRecordScreen(
                     }
 
                     AudioPlayerComponent(
-                        audioDuration = state.newEntry.audioDuration,
-                        color = state.selectedMood?.color ?: MaterialTheme.colorScheme.primary,
-                        onPlayClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnPlayClicked) },
-                        onPauseClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnPauseClicked) },
-                        onSliderValueChanged = { uiEvent(CreateRecordScreenViewModel.Event.OnSliderValueChanged(it)) }
+                        entry = state.newEntry,
+                        onPlayClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerStarted(it)) },
+                        onPauseClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerPaused(it)) },
+                        onSliderValueChanged = { uiEvent(CreateRecordScreenViewModel.Event.OnSliderValueChanged(it)) },
+                        onAudioPlayerEnd = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerEnded(it)) }
                     )
 
                     FlowRow(

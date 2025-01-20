@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,12 +21,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.icdominguez.echo_journal.R
+import com.icdominguez.echo_journal.presentation.designsystem.composables.MoodRowItem
 import com.icdominguez.echo_journal.presentation.designsystem.theme.BackgroundMoodItemSelected
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
-import com.icdominguez.echo_journal.presentation.designsystem.theme.Primary30
 import com.icdominguez.echo_journal.presentation.designsystem.theme.SecondaryContainer
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Mood
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Moods
+
+private const val MAX_VISIBLE_TOPICS = 2
 
 @Composable
 fun MoodFilterChip(
@@ -36,9 +36,6 @@ fun MoodFilterChip(
     onCloseButtonClicked: () -> Unit = {},
     onMoodItemClicked: (mood: Mood) -> Unit = {}
 ) {
-
-    val maxSize = 2
-
     CustomFilterChip(
         selectedList = selectedMoodList,
         filterChipLabel = {
@@ -64,10 +61,10 @@ fun MoodFilterChip(
                 var text = stringResource(id = R.string.all_moods)
 
                 if (selectedMoodList.isNotEmpty()) {
-                    text = if (selectedMoodList.size > maxSize) {
+                    text = if (selectedMoodList.size > MAX_VISIBLE_TOPICS) {
                         "${selectedMoodList[0].name}," +
                                 " ${selectedMoodList[1].name} " +
-                                "+ ${selectedMoodList.size - maxSize}"
+                                "+ ${selectedMoodList.size - MAX_VISIBLE_TOPICS}"
                     } else {
                         if (selectedMoodList.size == 1) {
                             selectedMoodList[0].name
@@ -99,40 +96,20 @@ fun MoodFilterChip(
         },
         dropdownMenuContent = {
             Moods.allMods.reversed().forEach { mood ->
-                DropdownMenuItem(
+                val isSelected = selectedMoodList.contains(mood)
+                MoodRowItem(
                     modifier = Modifier
                         .padding(vertical = 2.dp)
                         .padding(horizontal = 4.dp)
                         .background(
-                            color = if (selectedMoodList.contains(mood)) BackgroundMoodItemSelected.copy(
+                            color = if (isSelected) BackgroundMoodItemSelected.copy(
                                 alpha = 0.05f
                             ) else Color.Transparent,
                             shape = RoundedCornerShape(size = 8.dp)
                         ),
-                    text = {
-                        Text(
-                            text = mood.name,
-                            style = LocalEchoJournalTypography.current.button
-                        )
-                    },
-                    leadingIcon = {
-                        Image(
-                            painter = painterResource(mood.selectedDrawable),
-                            contentDescription = null
-                        )
-                    },
-                    trailingIcon = {
-                        if (selectedMoodList.contains(mood)) {
-                            Image(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                colorFilter = ColorFilter.tint(Primary30)
-                            )
-                        }
-                    },
-                    onClick = {
-                        onMoodItemClicked(mood)
-                    }
+                    mood = mood,
+                    onClick = { onMoodItemClicked(mood) },
+                    isSelected = isSelected
                 )
             }
         }

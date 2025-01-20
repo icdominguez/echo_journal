@@ -8,47 +8,47 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
 import com.icdominguez.echo_journal.presentation.designsystem.theme.Primary30
+import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Mood
+import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Moods
 
 @Composable
-fun TopicRowItem(
+fun MoodRowItem(
     modifier: Modifier = Modifier,
+    mood: Mood = Moods.SAD,
     onClick: () -> Unit = {},
-    topic: String = "",
     isSelected: Boolean = false,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable {
-                onClick()
-            },
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
+        Image(
             modifier = Modifier
                 .padding(
-                    top = 10.dp,
-                    bottom = 10.dp,
-                    start = 12.dp,
+                    top = 8.dp,
+                    start = 14.dp,
+                    bottom = 8.dp,
                     end = 8.dp,
                 ),
-            text = "#",
-            style = LocalEchoJournalTypography.current.button.copy(color = MaterialTheme.colorScheme.primary),
+            painter = painterResource(mood.selectedDrawable),
+            contentDescription = null
         )
         Text(
             modifier = Modifier.padding(start = 4.dp),
-            text = topic,
+            text = mood.name,
             style = LocalEchoJournalTypography.current.button
                 .copy(color = Color(0xFF3B4663))
         )
@@ -66,11 +66,9 @@ fun TopicRowItem(
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
-fun TopicRowItemPreview() {
-    TopicRowItem(
-        topic = "Topic",
-        isSelected = true
-    )
+fun MoodRowItemPreview() {
+    MoodRowItem(isSelected = true)
 }

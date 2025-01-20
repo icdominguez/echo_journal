@@ -15,11 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.icdominguez.echo_journal.presentation.designsystem.theme.CloseButton
 import com.icdominguez.echo_journal.presentation.designsystem.theme.LocalEchoJournalTypography
+import com.icdominguez.echo_journal.presentation.designsystem.theme.TopicBackground
 
 @Composable
 fun AssociatedTopicItem(
@@ -32,7 +33,7 @@ fun AssociatedTopicItem(
     Box(
         modifier = modifier
             .background(
-                color = Color(android.graphics.Color.parseColor("#F2F2F7")),
+                color = TopicBackground,
                 shape = CircleShape,
             )
     ) {
@@ -67,7 +68,7 @@ fun AssociatedTopicItem(
                     ),
                 imageVector = Icons.Default.Close,
                 contentDescription = null,
-                tint = Color(android.graphics.Color.parseColor("#BDBDC5")),
+                tint = CloseButton,
             )
         }
     }

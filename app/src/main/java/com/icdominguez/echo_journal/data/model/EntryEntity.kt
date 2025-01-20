@@ -26,6 +26,6 @@ fun EntryEntity.toEntry() = Entry(
     description = description,
     filePath = filePath,
     date = date,
-    topics = relatedTopics.split(","),
+    topics = relatedTopics.takeIf { it.isNotEmpty() }?.split(",") ?: emptyList(),
     audioDuration = audioDuration
 )

@@ -25,35 +25,47 @@ class AndroidAudioPlayer @Inject constructor(
                 return player?.duration ?: 0
             }
         } catch (e: Exception) {
-            Log.i("icd", "Couldn't create an instance of audio player")
             return -1
         }
     }
 
-    override fun play() {
+    override fun play(path: String) {
+        Log.i("icd", "android Audio Player play")
+        player?.reset()
+        player?.setDataSource(path)
+        player?.prepare()
         player?.start()
     }
 
-    override fun playFrom(millis: Int) {
-        player?.let {
-            it.apply {
-                seekTo(millis.toLong(), MediaPlayer.SEEK_CLOSEST_SYNC)
-            }
-        }
+    override fun playFrom(path: String, millis: Int) {
+        Log.i("icd", "Android Audio Player playFrom")
+        player?.reset()
+        player?.setDataSource(path)
+        player?.prepare()
+        player?.start()
+        player?.seekTo(millis.toLong(), MediaPlayer.SEEK_CLOSEST_SYNC)
     }
 
-    override fun pause() {
+    override fun pause(): Int {
+        Log.i("icd", "android Audio Player pause")
+        var currentPosition: Int? = null
         player?.let {
             if(it.isPlaying) {
                 it.pause()
             }
+            currentPosition = player?.currentPosition
         }
+        return currentPosition ?: 0
+    }
+
+    override fun stop() {
+        Log.i("icd", "android Audio Player stop")
+        player?.stop()
     }
 
     override fun reset() {
-        player?.stop()
+        Log.i("icd", "android Audio Player reset")
         player?.release()
         player = null
     }
-
 }

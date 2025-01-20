@@ -6,5 +6,6 @@ import javax.inject.Inject
 class CreateFileUseCase @Inject constructor(
     private val fileManagerRepository: FileManagerRepository,
 ){
-    operator fun invoke() = fileManagerRepository.createFile()
+    operator fun invoke() =
+        fileManagerRepository.createFile()
 }
