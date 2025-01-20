@@ -42,6 +42,7 @@ import com.icdominguez.echo_journal.presentation.screens.createrecord.composable
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.CreateTopicItem
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.DescriptionTextField
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.EntryTextField
+import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.LeaveCreateRecordDialog
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.SaveButton
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.TopicTextField
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.moodselector.MoodSelectorModalBottomSheet
@@ -59,10 +60,7 @@ fun CreateRecordScreen(
             .fillMaxSize(),
         topBar = {
             CreateRecordScreenTopBar(
-                onNavigationIconClicked = {
-                    uiEvent(CreateRecordScreenViewModel.Event.OnBackClicked)
-                    navigateBack()
-                }
+                onNavigationIconClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnBackClicked) }
             )
         }
     ) { innerPadding ->
@@ -235,10 +233,17 @@ fun CreateRecordScreen(
             }
         }
 
-        BackHandler {
-            uiEvent(CreateRecordScreenViewModel.Event.OnBackClicked)
-            navigateBack()
+        if(state.shouldShowLeaveNewEntryDialog) {
+            LeaveCreateRecordDialog(
+                onDismissRequest = { uiEvent(CreateRecordScreenViewModel.Event.OnLeaveNewRecordDialogDismissed) },
+                onConfirm = {
+                    uiEvent(CreateRecordScreenViewModel.Event.OnLeaveNewRecordDialogConfirmed)
+                    navigateBack()
+                }
+            )
         }
+
+        BackHandler { uiEvent(CreateRecordScreenViewModel.Event.OnBackClicked) }
     }
 }
 
