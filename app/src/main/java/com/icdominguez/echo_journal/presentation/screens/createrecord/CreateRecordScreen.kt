@@ -59,9 +59,7 @@ fun CreateRecordScreen(
         modifier = Modifier
             .fillMaxSize(),
         topBar = {
-            CreateRecordScreenTopBar(
-                onNavigationIconClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnBackClicked) }
-            )
+            CreateRecordScreenTopBar(onNavigationIconClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnBackClicked) })
         }
     ) { innerPadding ->
 
@@ -162,7 +160,7 @@ fun CreateRecordScreen(
                                             )
                                         }
                                     }
-                                    if(state.topicText.isNotEmpty() && !state.newEntry.topics.contains(state.topicText) && !state.topicList.any { it.name == state.topicText }) {
+                                    if(state.topicText.isNotEmpty() && state.newEntry.topics.none { it.lowercase() == state.topicText.lowercase() } && state.topicList.none { it.name == state.topicText }) {
                                         CreateTopicItem(
                                             value = state.topicText,
                                             onClick = { uiEvent(CreateRecordScreenViewModel.Event.OnAddTopicClicked(it)) },

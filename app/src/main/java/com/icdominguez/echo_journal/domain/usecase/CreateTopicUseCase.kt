@@ -7,7 +7,14 @@ import javax.inject.Inject
 class CreateTopicUseCase @Inject constructor(
     private val localEchoJournalRepository: LocalEchoJournalRepository
 ) {
-    suspend operator fun invoke(topic: String) {
-        localEchoJournalRepository.insertTopic(TopicEntity(name = topic))
+    suspend operator fun invoke(
+        topic: String,
+        default: Boolean = false
+    ) {
+        val newTopicEntity = TopicEntity(
+            name = topic,
+            isDefault = default
+        )
+        localEchoJournalRepository.insertTopic(newTopicEntity)
     }
 }

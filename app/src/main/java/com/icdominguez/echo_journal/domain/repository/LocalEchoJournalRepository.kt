@@ -9,4 +9,5 @@ interface LocalEchoJournalRepository {
     fun getAllTopics(): Flow<List<TopicEntity>>
     suspend fun insert(entryEntity: EntryEntity)
     suspend fun insertTopic(topicEntity: TopicEntity)
+    suspend fun updateTopic(topicEntity: TopicEntity)
 }

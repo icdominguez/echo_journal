@@ -75,6 +75,8 @@ dependencies {
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
 
+    implementation(libs.security.crypto)
+
     implementation(libs.core.splashscreen)
     implementation(libs.material.icons.extended)
 }

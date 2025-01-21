@@ -1,6 +1,5 @@
 package com.icdominguez.echo_journal.presentation.screens.createrecord.composables
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicTextField
@@ -13,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.icdominguez.echo_journal.R
@@ -36,6 +34,7 @@ fun EntryTextField(
         onValueChange = {
             onEntryTextChange(it)
         },
+        maxLines = 1,
         textStyle = LocalEchoJournalTypography.current.headlineLarge,
         decorationBox = { innerTextField ->
             Row {

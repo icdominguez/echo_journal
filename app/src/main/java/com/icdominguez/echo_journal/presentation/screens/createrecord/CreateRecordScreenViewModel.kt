@@ -7,6 +7,7 @@ import com.icdominguez.echo_journal.domain.usecase.CreateEntryUseCase
 import com.icdominguez.echo_journal.domain.usecase.CreateTopicUseCase
 import com.icdominguez.echo_journal.domain.usecase.DeleteFileUseCase
 import com.icdominguez.echo_journal.domain.usecase.GetAllTopicsUseCase
+import com.icdominguez.echo_journal.domain.usecase.GetMoodFromSharedPreferencesUseCase
 import com.icdominguez.echo_journal.presentation.MviViewModel
 import com.icdominguez.echo_journal.presentation.model.Entry
 import com.icdominguez.echo_journal.presentation.model.Topic
@@ -19,12 +20,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CreateRecordScreenViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val audioPlayer: AndroidAudioPlayer,
     private val deleteFileUseCase: DeleteFileUseCase,
     private val getAllTopicsUseCase: GetAllTopicsUseCase,
     private val createTopicUseCase: CreateTopicUseCase,
     private val createEntryUseCase: CreateEntryUseCase,
+    private val getMoodFromSharedPreferencesUseCase: GetMoodFromSharedPreferencesUseCase,
 ): MviViewModel<CreateRecordScreenViewModel.State, CreateRecordScreenViewModel.Event>() {
 
     private var fileRecordedPath: String? = null
@@ -82,8 +84,17 @@ class CreateRecordScreenViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            getAllTopicsUseCase().collect {
-                updateState { copy(topicList = it) }
+            val storedMood = getMoodFromSharedPreferencesUseCase()
+            getAllTopicsUseCase().collect { topicList ->
+                updateState {
+                    copy(
+                        topicList = topicList,
+                        newEntry = newEntry.copy(
+                            mood = Moods.allMods.find { mood -> mood.name == storedMood },
+                            topics = topicList.filter { it.isDefault || state.value.newEntry.topics.contains(it.name) }.map { it.name }
+                        )
+                    )
+                }
             }
         }
     }
