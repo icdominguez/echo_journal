@@ -28,4 +28,5 @@
     <string name="select_your_mood">Select default mood to apply to all new entries</string>
     <string name="my_topics">My Topics</string>
     <string name="select_your_topics">Select default topics to apply to all new entries</string>
+    <string name="no_vibrator">No vibration capability on this device</string>
 </resources>

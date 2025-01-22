@@ -36,3 +36,12 @@ val ScreenBg1 = Color(0x66D9E2FF)
 val ScreenBg2 = Color(0x66EEF0FF)
 val FloatingActionButton = Color(0xFF1B6EF3)
 val ButtonBackground = Color(0xFF002C6F)
+
+val FloatingActionButtonFirstColorShadowOne = Color(0xFF3982F6)
+val FloatingActionButtonSecondColorShadowOne = Color(0xFF0E5FE0)
+
+
+
+
+
+

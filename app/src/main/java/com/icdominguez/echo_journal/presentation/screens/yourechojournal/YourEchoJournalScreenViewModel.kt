@@ -34,6 +34,7 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         val selectedTopicList: List<Topic> = emptyList(),
         val topicsList: List<Topic> = emptyList(),
         val filePath: String = "",
+        val hasPermissions: Boolean = false,
     )
 
     override var currentState: State = State()
@@ -52,6 +53,8 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         data class OnSliderValueChanged(val entry: Entry): Event()
         data class OnAudioPlayerEnded(val entry: Entry): Event()
         // region: others
+        data object OnRecordAudioButtonPressed: Event()
+        data object OnRecordAudioButtonStopped: Event()
         data object OnCreateEntryFloatingActionButtonClicked: Event()
         data object OnRecordAudioModalSheetDismissed: Event()
         //region: moods filter
@@ -73,6 +76,8 @@ class YourEchoJournalScreenViewModel @Inject constructor(
             is Event.OnAudioPlayerPaused -> onAudioPlayerPaused(entry = event.entry)
             is Event.OnSliderValueChanged -> onSliderValueChanged(entry = event.entry)
             is Event.OnAudioPlayerEnded -> onAudioPlayerEnded(entry = event.entry)
+            is Event.OnRecordAudioButtonPressed -> onRecordAudioButtonPressed()
+            is Event.OnRecordAudioButtonStopped -> onRecordAudioButtonStopped()
             is Event.OnCreateEntryFloatingActionButtonClicked -> onCreateEntryFloatingActionButtonClicked()
             is Event.OnRecordAudioModalSheetDismissed -> onRecordAudioModalSheetDismissed()
             is Event.OnMoodsChipCloseButtonClicked -> onMoodsChipResetButtonClicked()
@@ -189,12 +194,22 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         updateState { copy(filteredEntryList = newList) }
     }
 
-    private fun onCreateEntryFloatingActionButtonClicked() {
-        val filePath = createFileUseCase()
+    private fun onRecordAudioButtonPressed() {
         val audioPlaying = state.value.filteredEntryList.firstOrNull { it.isPlaying }
         audioPlaying?.let { onAudioPlayerPaused(audioPlaying) }
-        updateState { copy(showRecordModalBottomSheet = true, filePath = filePath) }
-        audioRecorder.init(filePath)
+        audioRecorder.init(currentState.filePath)
+        audioRecorder.start()
+    }
+
+    private fun onRecordAudioButtonStopped() {
+        audioRecorder.stop()
+    }
+
+    private fun onCreateEntryFloatingActionButtonClicked() {
+        val audioPlaying = state.value.filteredEntryList.firstOrNull { it.isPlaying }
+        audioPlaying?.let { onAudioPlayerPaused(audioPlaying) }
+        updateState { copy(showRecordModalBottomSheet = true) }
+        audioRecorder.init(currentState.filePath)
         audioRecorder.start()
     }
 
@@ -321,6 +336,11 @@ class YourEchoJournalScreenViewModel @Inject constructor(
                 topic in selectedTopicList.map { it.name }
             }
         }
+    }
+
+    init {
+        val filePath = createFileUseCase()
+        updateState { copy(filePath = filePath) }
     }
     // endregion
 }
