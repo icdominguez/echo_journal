@@ -36,6 +36,7 @@ fun EntryTextField(
         onValueChange = {
             onEntryTextChange(it)
         },
+        singleLine = true,
         textStyle = LocalEchoJournalTypography.current.headlineLarge,
         decorationBox = { innerTextField ->
             Row {
