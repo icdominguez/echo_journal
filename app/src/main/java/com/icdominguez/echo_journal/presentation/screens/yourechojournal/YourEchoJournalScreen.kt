@@ -49,6 +49,7 @@ fun YourEchoJournalScreen(
     state: YourEchoJournalScreenViewModel.State = YourEchoJournalScreenViewModel.State(),
     uiEvent: (YourEchoJournalScreenViewModel.Event) -> Unit = {},
     navigateToCreateRecordScreen: (String) -> Unit = {},
+    navigateToSettingsScreenScreen: () -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -65,7 +66,10 @@ fun YourEchoJournalScreen(
 
     Scaffold(
         topBar = {
-            YourEchoJournalTopBar(modifier = Modifier.background(Color.Transparent))
+            YourEchoJournalTopBar(
+                modifier = Modifier.background(Color.Transparent),
+                onSettingsIconClicked = { navigateToSettingsScreenScreen() }
+            )
         }
     ) { innerPadding ->
         Box(
@@ -73,7 +77,7 @@ fun YourEchoJournalScreen(
                 .fillMaxSize()
                 .background(
                     brush = Brush
-                        .linearGradient(colors = listOf(ScreenBg1, ScreenBg2),)
+                        .linearGradient(colors = listOf(ScreenBg1, ScreenBg2))
                 )
                 .padding(innerPadding),
         ) {
@@ -95,7 +99,7 @@ fun YourEchoJournalScreen(
                         }
                     }
 
-                    if(state.topicsList.isNotEmpty()) {
+                    if(state.topicsList.isNotEmpty() && state.entryList.isNotEmpty()) {
                         item {
                             TopicFilterChip(
                                 topics = state.topicsList,

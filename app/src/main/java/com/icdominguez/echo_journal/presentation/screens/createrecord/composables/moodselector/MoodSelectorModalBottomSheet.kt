@@ -53,7 +53,8 @@ fun MoodSelectorModalBottomSheet(
 
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(top = 32.dp),
                 horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
             ) {
                 moodList.map { mood ->

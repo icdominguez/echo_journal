@@ -8,8 +8,10 @@ import com.icdominguez.echo_journal.presentation.model.Topic
 data class TopicEntity(
     @PrimaryKey
     val name: String,
+    val isDefault: Boolean = false,
 )
 
 fun TopicEntity.toTopic() = Topic(
     name = this.name,
+    isDefault = this.isDefault,
 )

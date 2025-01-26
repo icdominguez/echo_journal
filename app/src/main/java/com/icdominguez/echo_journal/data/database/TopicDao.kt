@@ -13,4 +13,7 @@ interface TopicDao {
 
     @Insert
     suspend fun insertTopic(vararg topicEntity: TopicEntity)
+
+    @Query("UPDATE topics SET isDefault = :isDefault WHERE name = :name")
+    suspend fun updateTopic(name: String, isDefault: Boolean)
 }

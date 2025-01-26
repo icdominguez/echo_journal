@@ -8,6 +8,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.icdominguez.echo_journal.presentation.screens.createrecord.CreateRecordScreen
 import com.icdominguez.echo_journal.presentation.screens.createrecord.CreateRecordScreenViewModel
+import com.icdominguez.echo_journal.presentation.screens.settings.SettingsScreen
+import com.icdominguez.echo_journal.presentation.screens.settings.SettingsScreenViewModel
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.YourEchoJournalScreenViewModel
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.YourEchoJournalScreen
 
@@ -27,6 +29,9 @@ fun Navigation() {
                 uiEvent = viewModel::uiEvent,
                 navigateToCreateRecordScreen = { fileRecordedPath ->
                     navController.navigate(NavItem.CreateRecord.createNavRoute(fileRecordedPath))
+                },
+                navigateToSettingsScreenScreen = {
+                    navController.navigate(NavItem.Settings.route)
                 }
             )
         }
@@ -39,6 +44,16 @@ fun Navigation() {
             requireNotNull(fileRecordedPath) { "Can't be null, create record required a file path" }
             val viewModel = hiltViewModel<CreateRecordScreenViewModel>()
             CreateRecordScreen(
+                state = viewModel.state.collectAsStateWithLifecycle().value,
+                uiEvent = viewModel::uiEvent,
+                navigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(route = NavItem.Settings.route) {
+            val viewModel = hiltViewModel<SettingsScreenViewModel>()
+
+            SettingsScreen(
                 state = viewModel.state.collectAsStateWithLifecycle().value,
                 uiEvent = viewModel::uiEvent,
                 navigateBack = { navController.popBackStack() },

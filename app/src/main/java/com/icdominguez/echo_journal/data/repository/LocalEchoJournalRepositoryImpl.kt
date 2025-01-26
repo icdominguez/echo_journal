@@ -15,6 +15,7 @@ class LocalEchoJournalRepositoryImpl @Inject constructor(
     private val entryDao: EntryDao,
     private val topicDao: TopicDao,
 ): LocalEchoJournalRepository {
+
     override fun getAllEntries() = flow {
         entryDao.getAll().collect { entry ->
             emit(entry)
@@ -36,6 +37,15 @@ class LocalEchoJournalRepositoryImpl @Inject constructor(
     override suspend fun insertTopic(topicEntity: TopicEntity) {
         return withContext(Dispatchers.IO) {
             topicDao.insertTopic(topicEntity)
+        }
+    }
+
+    override suspend fun updateTopic(topicEntity: TopicEntity) {
+        return withContext(Dispatchers.IO) {
+            topicDao.updateTopic(
+                name = topicEntity.name,
+                isDefault = topicEntity.isDefault,
+            )
         }
     }
 }

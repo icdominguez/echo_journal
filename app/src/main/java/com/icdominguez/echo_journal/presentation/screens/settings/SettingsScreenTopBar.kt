@@ -1,12 +1,12 @@
-package com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables
+package com.icdominguez.echo_journal.presentation.screens.settings
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,23 +17,21 @@ import com.icdominguez.echo_journal.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun YourEchoJournalTopBar(
+fun SettingsScreenTopBar(
     modifier: Modifier = Modifier,
-    onSettingsIconClicked: () -> Unit = {},
+    onNavigationIconClicked: () -> Unit = {},
 ) {
-    TopAppBar(
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent
-        ),
+    CenterAlignedTopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         title = {
-            Text(text = stringResource(R.string.your_echo_journal_top_bar_title))
+            Text(text = stringResource(R.string.settings))
         },
-        actions = {
+        navigationIcon = {
             IconButton(
-                onClick = { onSettingsIconClicked() }
+                onClick = { onNavigationIconClicked() }
             ) {
                 Icon(
-                    imageVector = Icons.Default.Settings,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = null
                 )
             }
@@ -41,8 +39,8 @@ fun YourEchoJournalTopBar(
     )
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-private fun YourEchoJournalTopBarPreview() {
-    YourEchoJournalTopBar()
+private fun SettingsScreenTopBarPreview() {
+    SettingsScreen()
 }

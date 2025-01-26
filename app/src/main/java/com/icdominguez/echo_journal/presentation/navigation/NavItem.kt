@@ -23,6 +23,7 @@ sealed class NavItem(
     data object CreateRecord: NavItem(baseRoute = "create_record", listOf(NavArg.FileRecordedPath)) {
         fun createNavRoute(fileRecordedPath: String) = "$baseRoute/${Uri.encode(fileRecordedPath)}"
     }
+    data object Settings: NavItem(baseRoute = "settings")
 }
 
 enum class NavArg(

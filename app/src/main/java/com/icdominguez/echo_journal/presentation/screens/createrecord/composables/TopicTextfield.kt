@@ -20,6 +20,7 @@ fun TopicTextField(
     modifier: Modifier = Modifier,
     text: String,
     onTopicTextChange: (String) -> Unit,
+    showHintText: Boolean = true,
 ) {
     var hasFocus by remember { mutableStateOf(false) }
 
@@ -35,7 +36,7 @@ fun TopicTextField(
         textStyle = LocalEchoJournalTypography.current.bodyMedium,
         decorationBox = { innerTextField ->
             Row {
-                if(text.isEmpty() && !hasFocus) {
+                if(text.isEmpty() && !hasFocus && showHintText) {
                     Text(
                         text = stringResource(R.string.topics),
                         style = LocalEchoJournalTypography.current.bodyMedium,
