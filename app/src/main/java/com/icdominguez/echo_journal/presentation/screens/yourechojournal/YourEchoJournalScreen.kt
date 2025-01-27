@@ -19,6 +19,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -50,9 +52,10 @@ fun YourEchoJournalScreen(
     uiEvent: (YourEchoJournalScreenViewModel.Event) -> Unit = {},
     navigateToCreateRecordScreen: (String) -> Unit = {},
     navigateToSettingsScreenScreen: () -> Unit = {},
+    isLaunchedFromWidget: Boolean = false,
 ) {
+    val hasCheckedLaunchedFromWidget = rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
-
     val recordAudioLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -174,12 +177,12 @@ fun YourEchoJournalScreen(
             )
         }
 
-         if(state.showRecordModalBottomSheet) {
+        if(state.showRecordModalBottomSheet) {
              RecordAudioModalBottomSheet(
                  onDismissRequest = { uiEvent(YourEchoJournalScreenViewModel.Event.OnRecordAudioModalSheetDismissed) },
                  navigateToNewEntry = {
-                     navigateToCreateRecordScreen(state.filePath)
                      uiEvent(YourEchoJournalScreenViewModel.Event.OnRecordAudioConfirmed)
+                     navigateToCreateRecordScreen(state.filePath)
                  },
                  onRecordAudioPaused = { uiEvent(YourEchoJournalScreenViewModel.Event.OnRecordAudioPaused) },
                  onRecordAudioResumed = { uiEvent(YourEchoJournalScreenViewModel.Event.OnRecordAudioResumed) },
@@ -214,6 +217,13 @@ fun YourEchoJournalScreen(
                     }
                 )
             }
+
+        if(!hasCheckedLaunchedFromWidget.value) {
+            hasCheckedLaunchedFromWidget.value = true
+            if(isLaunchedFromWidget) {
+                recordAudioLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            }
+        }
     }
 }
 

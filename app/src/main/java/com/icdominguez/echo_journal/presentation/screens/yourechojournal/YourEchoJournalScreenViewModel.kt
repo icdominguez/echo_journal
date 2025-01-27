@@ -95,7 +95,8 @@ class YourEchoJournalScreenViewModel @Inject constructor(
                     .toMutableList()
                     .apply {
                         add(permission)
-                    }
+                    },
+                showRecordModalBottomSheet = false
             )
         }
     }
