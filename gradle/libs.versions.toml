@@ -16,6 +16,7 @@ room = "2.6.1"
 splashScreen = "1.0.1"
 ksp = "2.1.0-1.0.29"
 security-crypto="1.1.0-alpha06"
+glance = "1.0.0-alpha05"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,12 +42,13 @@ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", versio
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx =  { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen" }
+androidx-glance = { group = "androidx.glance", name = "glance", version.ref = "glance" }
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+security-crypto = { module = "androidx.security:security-crypto", version.ref = "security-crypto" }
 
 ksp = { module = "com.google.devtools.ksp:symbol-processing", version.ref = "ksp" }
 ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
-
-security-crypto = { module = "androidx.security:security-crypto", version.ref = "security-crypto" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

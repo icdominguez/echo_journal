@@ -14,7 +14,9 @@ import com.icdominguez.echo_journal.presentation.screens.yourechojournal.YourEch
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.YourEchoJournalScreen
 
 @Composable
-fun Navigation() {
+fun Navigation(
+    isLaunchedFromWidget: Boolean = false,
+) {
     val navController = rememberNavController()
 
     NavHost(
@@ -32,7 +34,8 @@ fun Navigation() {
                 },
                 navigateToSettingsScreenScreen = {
                     navController.navigate(NavItem.Settings.route)
-                }
+                },
+                isLaunchedFromWidget = isLaunchedFromWidget,
             )
         }
 
@@ -43,6 +46,7 @@ fun Navigation() {
             val fileRecordedPath = backStackEntry.arguments?.getString(NavArg.FileRecordedPath.key)
             requireNotNull(fileRecordedPath) { "Can't be null, create record required a file path" }
             val viewModel = hiltViewModel<CreateRecordScreenViewModel>()
+
             CreateRecordScreen(
                 state = viewModel.state.collectAsStateWithLifecycle().value,
                 uiEvent = viewModel::uiEvent,

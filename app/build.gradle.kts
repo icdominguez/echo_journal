@@ -79,4 +79,8 @@ dependencies {
 
     implementation(libs.core.splashscreen)
     implementation(libs.material.icons.extended)
+
+    // Glance
+    implementation(libs.androidx.glance)
+    implementation(libs.androidx.glance.appwidget)
 }
