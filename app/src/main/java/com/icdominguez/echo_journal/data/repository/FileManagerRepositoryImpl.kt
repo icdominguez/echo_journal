@@ -1,6 +1,7 @@
 package com.icdominguez.echo_journal.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.icdominguez.echo_journal.common.toDateFormatted
 import com.icdominguez.echo_journal.domain.repository.FileManagerRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -16,9 +17,10 @@ class FileManagerRepositoryImpl @Inject constructor(
     private companion object {
         private const val AUDIOS_FOLDER = "audios"
         private const val AUDIO_EXTENSION = ".m4a"
+        private const val AMPLITUDES_FILE_NAME = "amplitudes.txt"
     }
 
-    override fun createFile(): String {
+    override fun createAudioFile(): String {
         val folder = File(context.cacheDir, AUDIOS_FOLDER)
 
         if(!folder.exists()) {
@@ -62,5 +64,30 @@ class FileManagerRepositoryImpl @Inject constructor(
             e.printStackTrace()
             null
         }
+    }
+
+    override fun createAmplitudesFile(amplitudes: List<Float>) {
+        val file = File(context.cacheDir, AMPLITUDES_FILE_NAME)
+        file.writeText(amplitudes.joinToString(","))
+    }
+
+    override fun retrieveAmplitudes(): List<Float> {
+        try {
+            val file = File(context.cacheDir, AMPLITUDES_FILE_NAME)
+
+            val amplitudes = file.readText()
+                .split(",")
+                .mapNotNull { it.takeIf { it.isNotEmpty() }?.trim()?.toFloat() }
+
+            return amplitudes
+        } catch (e: Exception) {
+            Log.e("icd", "Error trying to read amplitudes from file with stacktrace -> $e")
+            return emptyList()
+        }
+    }
+
+    override fun cleanAmplitudesFile() {
+        val file = File(context.cacheDir, AMPLITUDES_FILE_NAME)
+        file.writeText("")
     }
 }

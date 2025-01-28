@@ -129,11 +129,11 @@ fun RecordAudioModalBottomSheet(
                     .clickable {
                         if(isPaused) {
                             isPaused = false
-                            onRecordAudioPaused()
                             navigateToNewEntry()
                             timer.reset()
                         } else {
                             isPaused = true
+                            onRecordAudioPaused()
                             timer.pause()
                         }
                     },

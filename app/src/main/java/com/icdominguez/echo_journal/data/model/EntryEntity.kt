@@ -17,6 +17,7 @@ data class EntryEntity(
     val relatedTopics: String,
     val audioDuration: Int,
     val date: LocalDateTime = LocalDateTime.now(),
+    val amplitudes: String,
 )
 
 fun EntryEntity.toEntry() = Entry(
@@ -27,5 +28,6 @@ fun EntryEntity.toEntry() = Entry(
     filePath = filePath,
     date = date,
     topics = relatedTopics.takeIf { it.isNotEmpty() }?.split(",") ?: emptyList(),
-    audioDuration = audioDuration
+    audioDuration = audioDuration,
+    amplitudes = amplitudes.split(",").map { it.toFloat() },
 )

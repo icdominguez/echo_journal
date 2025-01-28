@@ -1,4 +1,4 @@
-package com.icdominguez.echo_journal.domain.usecase
+package com.icdominguez.echo_journal.domain.usecase.preferences
 
 import com.icdominguez.echo_journal.core.EchoJournalSharedPreferencesDataSource
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Mood
