@@ -47,6 +47,7 @@ fun RecordAudioModalBottomSheet(
     timer.start()
     var isPaused by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     var maxHeightForAudioControls by remember { mutableStateOf(0.dp) }
 
     val heightModifier = if(maxHeightForAudioControls == 0.dp) {
