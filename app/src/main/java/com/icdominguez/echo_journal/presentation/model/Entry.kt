@@ -14,4 +14,5 @@ data class Entry(
     val audioDuration: Int = 0,
     val audioProgress: Int = 0,
     val isPlaying: Boolean = false,
+    val amplitudes: List<Float> = emptyList(),
 )

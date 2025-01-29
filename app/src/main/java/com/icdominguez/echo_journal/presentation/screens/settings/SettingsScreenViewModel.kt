@@ -1,11 +1,11 @@
 package com.icdominguez.echo_journal.presentation.screens.settings
 
 import androidx.lifecycle.viewModelScope
-import com.icdominguez.echo_journal.domain.usecase.CreateTopicUseCase
-import com.icdominguez.echo_journal.domain.usecase.GetAllTopicsUseCase
-import com.icdominguez.echo_journal.domain.usecase.GetMoodFromSharedPreferencesUseCase
-import com.icdominguez.echo_journal.domain.usecase.SetMoodInSharedPreferencesUseCase
-import com.icdominguez.echo_journal.domain.usecase.UpdateTopicUseCase
+import com.icdominguez.echo_journal.domain.usecase.database.CreateTopicUseCase
+import com.icdominguez.echo_journal.domain.usecase.database.GetAllTopicsUseCase
+import com.icdominguez.echo_journal.domain.usecase.preferences.GetMoodFromSharedPreferencesUseCase
+import com.icdominguez.echo_journal.domain.usecase.preferences.SetMoodInSharedPreferencesUseCase
+import com.icdominguez.echo_journal.domain.usecase.database.UpdateTopicUseCase
 import com.icdominguez.echo_journal.presentation.MviViewModel
 import com.icdominguez.echo_journal.presentation.model.Topic
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Mood

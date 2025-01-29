@@ -1,4 +1,4 @@
-package com.icdominguez.echo_journal.domain.usecase
+package com.icdominguez.echo_journal.domain.usecase.database
 
 import com.icdominguez.echo_journal.data.model.EntryEntity
 import com.icdominguez.echo_journal.domain.repository.FileManagerRepository
@@ -23,7 +23,8 @@ class CreateEntryUseCase @Inject constructor(
                     filePath = it,
                     audioDuration = entry.audioDuration,
                     relatedTopics = entry.topics.joinToString(","),
-                    date = LocalDateTime.now()
+                    date = LocalDateTime.now(),
+                    amplitudes = entry.amplitudes.joinToString(","),
                 )
             )
         }

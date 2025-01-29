@@ -1,4 +1,4 @@
-package com.icdominguez.echo_journal.presentation
+package com.icdominguez.echo_journal.presentation.widget
 
 import androidx.compose.runtime.Composable
 import androidx.glance.GlanceModifier
@@ -15,6 +15,7 @@ import androidx.glance.layout.Column
 import androidx.glance.layout.wrapContentSize
 import com.icdominguez.echo_journal.R
 import com.icdominguez.echo_journal.common.Constants.IS_LAUNCHED_FROM_WIDGET
+import com.icdominguez.echo_journal.presentation.MainActivity
 
 object NewEntryWidget: GlanceAppWidget() {
 

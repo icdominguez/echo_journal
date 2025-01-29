@@ -1,4 +1,4 @@
-package com.icdominguez.echo_journal.domain.usecase
+package com.icdominguez.echo_journal.domain.usecase.database
 
 import com.icdominguez.echo_journal.data.model.TopicEntity
 import com.icdominguez.echo_journal.domain.repository.LocalEchoJournalRepository

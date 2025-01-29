@@ -3,11 +3,13 @@ package com.icdominguez.echo_journal.presentation.screens.createrecord
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.icdominguez.echo_journal.data.audio.AndroidAudioPlayer
-import com.icdominguez.echo_journal.domain.usecase.CreateEntryUseCase
-import com.icdominguez.echo_journal.domain.usecase.CreateTopicUseCase
-import com.icdominguez.echo_journal.domain.usecase.DeleteFileUseCase
-import com.icdominguez.echo_journal.domain.usecase.GetAllTopicsUseCase
-import com.icdominguez.echo_journal.domain.usecase.GetMoodFromSharedPreferencesUseCase
+import com.icdominguez.echo_journal.domain.usecase.database.CreateEntryUseCase
+import com.icdominguez.echo_journal.domain.usecase.database.CreateTopicUseCase
+import com.icdominguez.echo_journal.domain.usecase.database.GetAllTopicsUseCase
+import com.icdominguez.echo_journal.domain.usecase.files.CleanAmplitudesFileUseCase
+import com.icdominguez.echo_journal.domain.usecase.files.DeleteFileUseCase
+import com.icdominguez.echo_journal.domain.usecase.files.RetrieveAmplitudesUseCase
+import com.icdominguez.echo_journal.domain.usecase.preferences.GetMoodFromSharedPreferencesUseCase
 import com.icdominguez.echo_journal.presentation.MviViewModel
 import com.icdominguez.echo_journal.presentation.model.Entry
 import com.icdominguez.echo_journal.presentation.model.Topic
@@ -27,6 +29,8 @@ class CreateRecordScreenViewModel @Inject constructor(
     private val createTopicUseCase: CreateTopicUseCase,
     private val createEntryUseCase: CreateEntryUseCase,
     private val getMoodFromSharedPreferencesUseCase: GetMoodFromSharedPreferencesUseCase,
+    private val retrieveAmplitudesUseCase: RetrieveAmplitudesUseCase,
+    private val cleanAmplitudesFileUseCase: CleanAmplitudesFileUseCase,
 ): MviViewModel<CreateRecordScreenViewModel.State, CreateRecordScreenViewModel.Event>() {
 
     private var fileRecordedPath: String? = null
@@ -83,18 +87,31 @@ class CreateRecordScreenViewModel @Inject constructor(
                 copy(newEntry = state.value.newEntry.copy(filePath = it, audioDuration = audioDuration))
             }
         }
+
         viewModelScope.launch {
-            val storedMood = getMoodFromSharedPreferencesUseCase()
             getAllTopicsUseCase().collect { topicList ->
                 updateState {
                     copy(
                         topicList = topicList,
                         newEntry = newEntry.copy(
-                            mood = Moods.allMods.find { mood -> mood.name == storedMood },
+                            mood = Moods.allMods.find { mood -> mood.name == newEntry.mood?.name },
                             topics = topicList.filter { it.isDefault || state.value.newEntry.topics.contains(it.name) }.map { it.name }
                         )
                     )
                 }
+            }
+        }
+
+        viewModelScope.launch {
+            val storedMood = getMoodFromSharedPreferencesUseCase()
+            val amplitudes = retrieveAmplitudesUseCase()
+            updateState {
+                copy(
+                    newEntry = state.value.newEntry.copy(
+                        amplitudes = amplitudes,
+                        mood = Moods.allMods.find { mood -> mood.name == storedMood },
+                    ),
+                )
             }
         }
     }
@@ -141,7 +158,6 @@ class CreateRecordScreenViewModel @Inject constructor(
     }
 
     private fun onMoodSelectorModalBottomSheetConfirmed() {
-        audioPlayer.reset()
         state.value.moodSelectorModalBottomSheetSelected?.let {
             updateState {
                 copy(
@@ -167,7 +183,14 @@ class CreateRecordScreenViewModel @Inject constructor(
         } else {
             audioPlayer.play(entry.filePath)
         }
+
         updateState { copy(newEntry = state.value.newEntry.copy(isPlaying = true)) }
+
+        viewModelScope.launch {
+            audioPlayer.listener().collect { audioProgress ->
+                updateState { copy(newEntry = state.value.newEntry.copy(audioProgress = audioProgress.toInt())) }
+            }
+        }
     }
 
     private fun onAudioPlayerPaused(entry: Entry) {
@@ -189,8 +212,8 @@ class CreateRecordScreenViewModel @Inject constructor(
     }
 
     private fun onAudioPlayerEnded(entry: Entry) {
-        audioPlayer.stop()
         updateState { copy(newEntry = state.value.newEntry.copy(isPlaying = false, audioProgress = 0)) }
+        audioPlayer.stop()
     }
 
     private fun onTopicTextChanged(topicText: String) {
@@ -242,6 +265,8 @@ class CreateRecordScreenViewModel @Inject constructor(
     }
 
     private fun onLeaveNewRecordDialogConfirmed() {
+        cleanAmplitudesFileUseCase()
+
         fileRecordedPath?.let {
             audioPlayer.reset()
             deleteFileUseCase(it)

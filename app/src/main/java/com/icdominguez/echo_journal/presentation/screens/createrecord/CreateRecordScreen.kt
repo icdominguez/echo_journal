@@ -107,7 +107,7 @@ fun CreateRecordScreen(
                         onPlayClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerStarted(it)) },
                         onPauseClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerPaused(it)) },
                         onSliderValueChanged = { uiEvent(CreateRecordScreenViewModel.Event.OnSliderValueChanged(it)) },
-                        onAudioPlayerEnd = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerEnded(it)) }
+                        onAudioPlayerEnd = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerEnded(it)) },
                     )
 
                     FlowRow(

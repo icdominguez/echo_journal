@@ -3,10 +3,11 @@ package com.icdominguez.echo_journal.presentation.screens.yourechojournal
 import androidx.lifecycle.viewModelScope
 import com.icdominguez.echo_journal.domain.audio.AudioPlayer
 import com.icdominguez.echo_journal.domain.audio.AudioRecorder
-import com.icdominguez.echo_journal.domain.usecase.CreateFileUseCase
-import com.icdominguez.echo_journal.domain.usecase.DeleteFileUseCase
-import com.icdominguez.echo_journal.domain.usecase.GetAllEntriesUseCase
-import com.icdominguez.echo_journal.domain.usecase.GetAllTopicsUseCase
+import com.icdominguez.echo_journal.domain.usecase.database.GetAllEntriesUseCase
+import com.icdominguez.echo_journal.domain.usecase.database.GetAllTopicsUseCase
+import com.icdominguez.echo_journal.domain.usecase.files.CreateAmplitudesFileUseCase
+import com.icdominguez.echo_journal.domain.usecase.files.CreateFileUseCase
+import com.icdominguez.echo_journal.domain.usecase.files.DeleteFileUseCase
 import com.icdominguez.echo_journal.presentation.MviViewModel
 import com.icdominguez.echo_journal.presentation.model.Entry
 import com.icdominguez.echo_journal.presentation.model.Topic
@@ -23,7 +24,10 @@ class YourEchoJournalScreenViewModel @Inject constructor(
     private val deleteFileUseCase: DeleteFileUseCase,
     private val getAllEntriesUseCase: GetAllEntriesUseCase,
     private val getAllTopicsUseCase: GetAllTopicsUseCase,
+    private val createAmplitudesFileUseCase: CreateAmplitudesFileUseCase,
 ): MviViewModel<YourEchoJournalScreenViewModel.State, YourEchoJournalScreenViewModel.Event>() {
+
+    private var audioAmplitudes = emptyList<Float>()
 
     data class State(
         val showRecordModalBottomSheet: Boolean = false,
@@ -90,6 +94,18 @@ class YourEchoJournalScreenViewModel @Inject constructor(
     init {
         getAllEntries()
         getAllTopics()
+        viewModelScope.launch {
+            audioPlayer.listener().collect { audioProgress ->
+                val newList = state.value.filteredEntryList.toMutableList().map {
+                    if(it.isPlaying) {
+                        it.copy(audioProgress = audioProgress.toInt())
+                    } else {
+                        it
+                    }
+                }
+                updateState { copy(filteredEntryList = newList) }
+            }
+        }
     }
 
     // region: events
@@ -119,12 +135,13 @@ class YourEchoJournalScreenViewModel @Inject constructor(
     }
 
     private fun onRecordAudioPaused() =
-        audioRecorder.resume()
-
-    private fun onRecordAudioResumed() =
         audioRecorder.pause()
 
+    private fun onRecordAudioResumed() =
+        audioRecorder.resume()
+
     private fun onRecordAudioConfirmed() {
+        createAmplitudesFileUseCase(audioAmplitudes)
         updateState { copy(showRecordModalBottomSheet = false) }
         audioRecorder.stop()
     }
@@ -206,11 +223,16 @@ class YourEchoJournalScreenViewModel @Inject constructor(
     }
 
     private fun onCreateEntryFloatingActionButtonClicked() {
+        val filePath = createFileUseCase()
         val audioPlaying = state.value.filteredEntryList.firstOrNull { it.isPlaying }
         audioPlaying?.let { onAudioPlayerPaused(audioPlaying) }
-        updateState { copy(showRecordModalBottomSheet = true) }
-        audioRecorder.init(currentState.filePath)
-        audioRecorder.start()
+        updateState { copy(showRecordModalBottomSheet = true, filePath = filePath) }
+        audioRecorder.init(filePath)
+        viewModelScope.launch {
+            audioRecorder.start().collect {
+                audioAmplitudes = audioAmplitudes.toMutableList().apply { add(it) }
+            }
+        }
     }
 
     private fun onRecordAudioModalSheetDismissed() {
