@@ -22,6 +22,7 @@ fun DescriptionTextField(
     modifier: Modifier = Modifier,
     text: String = "",
     onDescriptionTextChange: (String) -> Unit = {},
+    isLoading: Boolean = false,
 ) {
     var hasFocus by remember { mutableStateOf(false) }
     BasicTextField(
@@ -37,7 +38,13 @@ fun DescriptionTextField(
         textStyle = LocalEchoJournalTypography.current.bodyMedium.copy(MaterialTheme.colorScheme.onSurfaceVariant),
         decorationBox = { innerTextField ->
             Row {
-                if(text.isEmpty() && !hasFocus) {
+                if(isLoading) {
+                    Text(
+                        text = stringResource(R.string.loading_voice_to_text),
+                        style = LocalEchoJournalTypography.current.bodyMedium,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+                } else if(text.isEmpty() && !hasFocus) {
                     Text(
                         text = stringResource(R.string.add_description),
                         style = LocalEchoJournalTypography.current.bodyMedium,

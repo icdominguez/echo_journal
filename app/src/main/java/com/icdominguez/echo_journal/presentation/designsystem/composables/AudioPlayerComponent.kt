@@ -1,5 +1,6 @@
 package com.icdominguez.echo_journal.presentation.designsystem.composables
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -75,8 +76,8 @@ fun AudioPlayerComponent(
                 color = entry.mood?.color?.copy(alpha = 0.1f) ?: Moods.SAD.color.copy(alpha = 0.1f)
             )
             .padding(
-                top = 4.dp,
-                bottom = 4.dp,
+                top = 6.dp,
+                bottom = 6.dp,
                 start = 4.dp,
                 end = 10.dp,
             )
@@ -96,21 +97,37 @@ fun AudioPlayerComponent(
                     .clickable(
                         enabled = entry.audioDuration > 0L,
                         onClick = {
-                            if(entry.isPlaying) {
+                            if (entry.isPlaying) {
                                 onPauseClicked(entry)
-                            } else{
+                            } else {
                                 onPlayClicked(entry)
                             }
                         }
                     )
             ) {
-                Icon(
-                    modifier = Modifier
-                        .align(Alignment.Center),
-                    imageVector = if(entry.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    tint = entry.mood?.color ?: Moods.SAD.color,
-                    contentDescription = null,
-                )
+                AnimatedContent(
+                    modifier = Modifier.align(Alignment.Center),
+                    targetState = entry.isPlaying,
+                    label = ""
+                ) { isPlaying ->
+                    if (isPlaying) {
+                        Icon(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            imageVector = Icons.Default.Pause ,
+                            tint = entry.mood?.color ?: Moods.SAD.color,
+                            contentDescription = null,
+                        )
+                    } else {
+                        Icon(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            imageVector = Icons.Default.PlayArrow,
+                            tint = entry.mood?.color ?: Moods.SAD.color,
+                            contentDescription = null,
+                        )
+                    }
+                }
             }
 
             AudioWaveform(

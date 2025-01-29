@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -11,6 +12,12 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.animateValue
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -38,14 +45,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropEvent
@@ -61,6 +62,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat
@@ -121,7 +123,7 @@ fun YourEchoJournalScreen(
             override fun onEnded(event: DragAndDropEvent) {
                 super.onEnded(event)
                 isPressed = false
-                uiEvent(YourEchoJournalScreenViewModel.Event.OnRecordAudioButtonStopped)
+                uiEvent(YourEchoJournalScreenViewModel.Event.OnRecordAudioConfirmed)
                 navigateToCreateRecordScreen(state.filePath)
             }
 
@@ -141,7 +143,7 @@ fun YourEchoJournalScreen(
         .widthIn(min = maxWidthForAudioControls, max = maxWidthForAudioControls)
 
     // region: permissions
-    var hasPermission by remember { mutableStateOf(false) }
+    var hasPermission by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) }
 
     val recordAudioLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -173,11 +175,11 @@ fun YourEchoJournalScreen(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 LazyRow (
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     if(state.entryList.isNotEmpty()) {
                         item {
@@ -206,6 +208,7 @@ fun YourEchoJournalScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
+                            .padding(start = 4.dp)
                             .verticalScroll(rememberScrollState()),
                     ) {
                         val mappedList = state.filteredEntryList.sortedByDescending { it.date }.groupBy { it.date.toLocalDate() }
@@ -295,11 +298,35 @@ fun YourEchoJournalScreen(
                                 }
                             }
                     ) {
+
+                        val transition = rememberInfiniteTransition(label = "")
+                        val animatedCircleSizeOne = transition.animateValue(
+                            initialValue = 88.dp,
+                            targetValue = 108.dp,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(durationMillis = 500),
+                                repeatMode = RepeatMode.Reverse
+                            ),
+                            typeConverter = Dp.VectorConverter,
+                            label = "",
+                        )
+
+                        val animatedCircleSizeTwo = transition.animateValue(
+                            initialValue = 108.dp,
+                            targetValue = 128.dp,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(durationMillis = 500),
+                                repeatMode = RepeatMode.Reverse
+                            ),
+                            typeConverter = Dp.VectorConverter,
+                            label = "",
+                        )
+
                         if (isPressed) {
                             Canvas(
                                 modifier = Modifier
                                     .align(Alignment.Center)
-                                    .size(128.dp)
+                                    .size(animatedCircleSizeTwo.value)
                             ) {
                                 drawCircle(
                                     brush = Brush.linearGradient(
@@ -309,14 +336,14 @@ fun YourEchoJournalScreen(
                                         ),
                                         start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                         end = androidx.compose.ui.geometry.Offset(300f, 300f)
-                                    ),
+                                    )
                                 )
                             }
 
                             Canvas(
                                 modifier = Modifier
                                     .align(Alignment.Center)
-                                    .size(108.dp)
+                                    .size(animatedCircleSizeOne.value)
                             ) {
                                 drawCircle(
                                     brush = Brush.linearGradient(
@@ -326,7 +353,7 @@ fun YourEchoJournalScreen(
                                         ),
                                         start = androidx.compose.ui.geometry.Offset(0f, 0f),
                                         end = androidx.compose.ui.geometry.Offset(300f, 300f)
-                                    ),
+                                    )
                                 )
                             }
                         }
@@ -367,7 +394,7 @@ fun YourEchoJournalScreen(
                                         },
                                     )
                                 },
-                            painter = painterResource(R.drawable.record),
+                            painter = if (isPressed) painterResource(R.drawable.record) else painterResource(R.drawable.fab_icon),
                             contentDescription = null,
                         )
                     }
@@ -420,9 +447,9 @@ fun YourEchoJournalScreen(
             hasCheckedLaunchedFromWidget.value = true
             if(isLaunchedFromWidget) {
                 if(hasPermission) {
-                    recordAudioLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                } else {
                     uiEvent(YourEchoJournalScreenViewModel.Event.OnCreateEntryFloatingActionButtonClicked)
+                } else {
+                    recordAudioLauncher.launch(Manifest.permission.RECORD_AUDIO)
                 }
             }
         }

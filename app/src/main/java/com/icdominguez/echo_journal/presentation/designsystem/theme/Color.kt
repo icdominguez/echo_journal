@@ -40,6 +40,9 @@ val ButtonBackground = Color(0xFF002C6F)
 val FloatingActionButtonFirstColorShadowOne = Color(0xFF3982F6)
 val FloatingActionButtonSecondColorShadowOne = Color(0xFF0E5FE0)
 
+val RecordAudioModalBottomSheetFirstColor = Color(0xFFD9E2FF)
+val RecordAudioModalBottomSheetSecondColor = Color(0xFFEEF0FF)
+
 
 
 

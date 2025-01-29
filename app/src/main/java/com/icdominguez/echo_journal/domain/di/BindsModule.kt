@@ -4,11 +4,13 @@ import com.icdominguez.echo_journal.data.audio.AndroidAudioPlayer
 import com.icdominguez.echo_journal.data.audio.AndroidAudioRecorder
 import com.icdominguez.echo_journal.data.repository.FileManagerRepositoryImpl
 import com.icdominguez.echo_journal.data.repository.LocalEchoJournalRepositoryImpl
+import com.icdominguez.echo_journal.data.repository.VoiceToTextRepositoryImpl
 import com.icdominguez.echo_journal.data.timer.AndroidTimer
 import com.icdominguez.echo_journal.domain.audio.AudioPlayer
 import com.icdominguez.echo_journal.domain.audio.AudioRecorder
 import com.icdominguez.echo_journal.domain.repository.FileManagerRepository
 import com.icdominguez.echo_journal.domain.repository.LocalEchoJournalRepository
+import com.icdominguez.echo_journal.domain.repository.VoiceToTextRepository
 import com.icdominguez.echo_journal.domain.timer.Timer
 import dagger.Binds
 import dagger.Module
@@ -23,6 +25,9 @@ interface BindsModule {
 
     @Binds
     fun provideFileManagerRepository(fileManagerRepositoryImpl: FileManagerRepositoryImpl): FileManagerRepository
+
+    @Binds
+    fun provideVoiceToTextRepository(voiceToTextRepositoryImpl: VoiceToTextRepositoryImpl): VoiceToTextRepository
 
     @Binds
     fun provideTimer(androidTimer: AndroidTimer): Timer

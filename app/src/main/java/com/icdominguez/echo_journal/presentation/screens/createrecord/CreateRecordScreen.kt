@@ -2,6 +2,7 @@ package com.icdominguez.echo_journal.presentation.screens.createrecord
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,8 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,6 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,6 +47,7 @@ import com.icdominguez.echo_journal.presentation.screens.createrecord.composable
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.SaveButton
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.TopicTextField
 import com.icdominguez.echo_journal.presentation.screens.createrecord.composables.moodselector.MoodSelectorModalBottomSheet
+import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Moods
 import com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.filters.CustomDropdownMenu
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -102,13 +104,41 @@ fun CreateRecordScreen(
                         )
                     }
 
-                    AudioPlayerComponent(
-                        entry = state.newEntry,
-                        onPlayClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerStarted(it)) },
-                        onPauseClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerPaused(it)) },
-                        onSliderValueChanged = { uiEvent(CreateRecordScreenViewModel.Event.OnSliderValueChanged(it)) },
-                        onAudioPlayerEnd = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerEnded(it)) },
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        AudioPlayerComponent(
+                            modifier = Modifier.weight(1f),
+                            entry = state.newEntry,
+                            onPlayClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerStarted(it)) },
+                            onPauseClicked = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerPaused(it)) },
+                            onSliderValueChanged = { uiEvent(CreateRecordScreenViewModel.Event.OnSliderValueChanged(it)) },
+                            onAudioPlayerEnd = { uiEvent(CreateRecordScreenViewModel.Event.OnAudioPlayerEnded(it)) }
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .shadow(
+                                    elevation = 4.dp,
+                                    shape = CircleShape
+                                )
+                                .background(Color.White, shape = CircleShape)
+                                .clickable {
+                                    uiEvent(CreateRecordScreenViewModel.Event.OnVoiceToTextButtonClicked)
+                                }
+                                .padding(all = 10.dp)
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .align(Alignment.Center),
+                                painter = painterResource(R.drawable.ia_icon),
+                                contentDescription = null,
+                                tint = state.newEntry.mood?.color ?: Moods.SAD.color
+                            )
+                        }
+                    }
 
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -116,6 +146,7 @@ fun CreateRecordScreen(
                     ) {
                         Column(
                             modifier = Modifier
+                                .width(16.dp)
                                 .height(topicsHeight),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
@@ -175,19 +206,28 @@ fun CreateRecordScreen(
                         modifier = Modifier
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = Alignment.Top,
                     ) {
                         Icon(
                             modifier = Modifier
                                 .size(16.dp),
-                            imageVector = Icons.Default.Edit,
+                            painter = if (state.isIAUsed) {
+                                painterResource(R.drawable.ia_icon)
+                            } else {
+                                painterResource(R.drawable.edit_icon)
+                            },
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.outlineVariant,
+                            tint = if (state.isIAUsed) {
+                                state.newEntry.mood?.color ?: Moods.SAD.color
+                            } else {
+                                MaterialTheme.colorScheme.outlineVariant
+                            },
                         )
                         DescriptionTextField(
                             modifier = Modifier
                                 .padding(start = 6.dp),
                             text = state.newEntry.description,
+                            isLoading = state.isLoading,
                             onDescriptionTextChange = { uiEvent(CreateRecordScreenViewModel.Event.OnDescriptionTextChanged(it)) }
                         )
                     }
