@@ -1,7 +1,7 @@
 package com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +33,7 @@ fun YourEchoJournalTopBar(
                 onClick = { onSettingsIconClicked() }
             ) {
                 Icon(
-                    imageVector = Icons.Default.Settings,
+                    imageVector = Icons.Outlined.Settings,
                     contentDescription = null
                 )
             }

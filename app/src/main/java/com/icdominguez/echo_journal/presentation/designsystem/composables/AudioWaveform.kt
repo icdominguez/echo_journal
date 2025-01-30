@@ -149,11 +149,14 @@ private fun List<Int>.toDrawableAmplitudes(
     if(amplitudes.isEmpty() || spikes == 0) {
         return List(spikes) { minHeight }
     }
-    val transform = { data: List<Float> ->
-        data.min().coerceIn(minHeight, maxHeight)
+
+    val interpolatedAmplitudes = mutableListOf<Float>()
+    val scaleFactor = amplitudes.size.toFloat() / spikes
+
+    for (i in 0 until spikes) {
+        val index = (i * scaleFactor).toInt().coerceIn(0, amplitudes.size - 1)
+        interpolatedAmplitudes.add(amplitudes[index])
     }
-    return when {
-        spikes > amplitudes.count() -> amplitudes.fillToSize(spikes, transform)
-        else -> amplitudes.chunkToSize(spikes, transform)
-    }.normalize(minHeight, maxHeight)
+
+    return interpolatedAmplitudes.normalize(minHeight, maxHeight)
 }
