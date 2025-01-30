@@ -18,6 +18,7 @@ import com.icdominguez.echo_journal.presentation.navigation.NavArg
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Mood
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Moods
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -104,6 +105,7 @@ class CreateRecordScreenViewModel @Inject constructor(
                         )
                     )
                 }
+                cancel()
             }
         }
 
