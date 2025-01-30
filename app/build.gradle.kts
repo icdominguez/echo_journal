@@ -19,6 +19,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "API_KEY",
+            "\"${project.findProperty("API_KEY")}\""
+        )
     }
 
     buildTypes {
@@ -39,6 +45,9 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    buildFeatures {
+        buildConfig = true
     }
     hilt {
         enableAggregatingTask = false
@@ -83,4 +92,10 @@ dependencies {
     // Glance
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.appwidget)
+
+    //Retrofit
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.logging.interceptor)
+    implementation(libs.okhttp.mockwebserver)
 }

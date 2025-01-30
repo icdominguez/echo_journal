@@ -1,4 +1,4 @@
-package com.icdominguez.echo_journal.core
+package com.icdominguez.echo_journal.core.preferences
 
 import android.content.Context
 import android.content.SharedPreferences

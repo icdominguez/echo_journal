@@ -2,7 +2,7 @@ package com.icdominguez.echo_journal.core.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.icdominguez.echo_journal.core.PreferencesHelper
+import com.icdominguez.echo_journal.core.preferences.PreferencesHelper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

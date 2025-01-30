@@ -1,5 +1,8 @@
 package com.icdominguez.echo_journal.presentation.screens.yourechojournal.composables.entrytimeline
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -67,6 +70,8 @@ fun DescriptionText(
         .fillMaxWidth()
     ) {
         Text(
+            modifier = Modifier
+                .animateContentSize(),
             text = cutText ?: text,
             style = LocalEchoJournalTypography.current.bodyMedium,
             overflow = TextOverflow.Ellipsis,

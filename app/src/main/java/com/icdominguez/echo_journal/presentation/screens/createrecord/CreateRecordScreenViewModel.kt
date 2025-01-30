@@ -3,6 +3,7 @@ package com.icdominguez.echo_journal.presentation.screens.createrecord
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.icdominguez.echo_journal.data.audio.AndroidAudioPlayer
+import com.icdominguez.echo_journal.domain.usecase.VoiceToTextUseCase
 import com.icdominguez.echo_journal.domain.usecase.database.CreateEntryUseCase
 import com.icdominguez.echo_journal.domain.usecase.database.CreateTopicUseCase
 import com.icdominguez.echo_journal.domain.usecase.database.GetAllTopicsUseCase
@@ -18,6 +19,7 @@ import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Mood
 import com.icdominguez.echo_journal.presentation.screens.createrecord.model.Moods
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,6 +33,7 @@ class CreateRecordScreenViewModel @Inject constructor(
     private val getMoodFromSharedPreferencesUseCase: GetMoodFromSharedPreferencesUseCase,
     private val retrieveAmplitudesUseCase: RetrieveAmplitudesUseCase,
     private val cleanAmplitudesFileUseCase: CleanAmplitudesFileUseCase,
+    private val voiceToTextUseCase: VoiceToTextUseCase,
 ): MviViewModel<CreateRecordScreenViewModel.State, CreateRecordScreenViewModel.Event>() {
 
     private var fileRecordedPath: String? = null
@@ -44,6 +47,8 @@ class CreateRecordScreenViewModel @Inject constructor(
         val topicList: List<Topic> = emptyList(),
         val filteredTopicList: List<Topic> = emptyList(),
         val shouldShowLeaveNewEntryDialog: Boolean = false,
+        val isIAUsed: Boolean = false,
+        val isLoading: Boolean = false,
     ) {
         val isSaveButtonEnabled: Boolean = newEntry.title.isNotEmpty() && newEntry.mood != null
     }
@@ -77,6 +82,7 @@ class CreateRecordScreenViewModel @Inject constructor(
         data object OnLeaveNewRecordDialogDismissed: Event()
         // region: others
         data object OnBackClicked: Event()
+        data object OnVoiceToTextButtonClicked: Event()
     }
 
     init {
@@ -94,7 +100,6 @@ class CreateRecordScreenViewModel @Inject constructor(
                     copy(
                         topicList = topicList,
                         newEntry = newEntry.copy(
-                            mood = Moods.allMods.find { mood -> mood.name == newEntry.mood?.name },
                             topics = topicList.filter { it.isDefault || state.value.newEntry.topics.contains(it.name) }.map { it.name }
                         )
                     )
@@ -136,6 +141,7 @@ class CreateRecordScreenViewModel @Inject constructor(
             is Event.OnLeaveNewRecordDialogConfirmed -> onLeaveNewRecordDialogConfirmed()
             is Event.OnLeaveNewRecordDialogDismissed -> onLeaveNewRecordDialogDismissed()
             is Event.OnBackClicked -> onBackClicked()
+            is Event.OnVoiceToTextButtonClicked -> onVoiceToTextButtonClicked()
         }
     }
 
@@ -254,11 +260,17 @@ class CreateRecordScreenViewModel @Inject constructor(
     }
 
     private fun onDescriptionTextChanged(descriptionText: String) {
-        updateState { copy(newEntry = state.value.newEntry.copy(description = descriptionText)) }
+        updateState {
+            copy(
+                newEntry = state.value.newEntry.copy(description = descriptionText),
+                isIAUsed = false
+            )
+        }
     }
 
     private fun onSaveButtonClicked() {
         audioPlayer.reset()
+        cleanAmplitudesFileUseCase()
         viewModelScope.launch {
             createEntryUseCase(entry = state.value.newEntry)
         }
@@ -279,6 +291,21 @@ class CreateRecordScreenViewModel @Inject constructor(
 
     private fun onBackClicked() {
         updateState { copy(shouldShowLeaveNewEntryDialog = true) }
+    }
+
+    private fun onVoiceToTextButtonClicked() {
+        fileRecordedPath?.let {
+            viewModelScope.launch {
+                updateState { copy(isIAUsed = true, isLoading = true) }
+                val voiceToTextResult = voiceToTextUseCase(File(it))
+                voiceToTextResult.onSuccess { text ->
+                    updateState { copy(newEntry = state.value.newEntry.copy(description = text), isLoading = false) }
+                }
+                voiceToTextResult.onFailure {
+                    updateState { copy(isIAUsed = false) }
+                }
+            }
+        }
     }
     // endregion
 }

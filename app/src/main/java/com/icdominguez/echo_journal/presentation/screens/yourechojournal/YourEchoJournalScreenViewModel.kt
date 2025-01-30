@@ -215,7 +215,11 @@ class YourEchoJournalScreenViewModel @Inject constructor(
         val audioPlaying = state.value.filteredEntryList.firstOrNull { it.isPlaying }
         audioPlaying?.let { onAudioPlayerPaused(audioPlaying) }
         audioRecorder.init(currentState.filePath)
-        audioRecorder.start()
+        viewModelScope.launch {
+            audioRecorder.start().collect {
+                audioAmplitudes = audioAmplitudes.toMutableList().apply { add(it) }
+            }
+        }
     }
 
     private fun onRecordAudioButtonStopped() {
